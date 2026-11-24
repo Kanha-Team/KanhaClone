@@ -289,9 +289,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                 return await CallbackQuery.answer(_["admin_13"], show_alert=True)
             else:
                 if CallbackQuery.from_user.id not in admins:
-                    return await CallbackQuery.answer(
-                        _["admin_14"], show_alert=True
-                    )
+                    return await CallbackQuery.answer(_["admin_14"], show_alert=True)
 
     if command == "Pause":
         if not await is_music_playing(chat_id):

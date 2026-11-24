@@ -10,11 +10,7 @@
 import asyncio
 
 from pyrogram import Client, filters
-from pyrogram.errors import (
-    AuthKeyUnregistered,
-    FloodWait,
-    UserDeactivated,
-)
+from pyrogram.errors import AuthKeyUnregistered, FloodWait, UserDeactivated
 
 from config import API_HASH, API_ID
 from KanhaClone import app

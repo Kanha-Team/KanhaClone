@@ -45,9 +45,7 @@ def get_random_start_img():
 
 @app.on_message(filters.command(["help"]) & filters.private & ~BANNED_USERS)
 @app.on_callback_query(filters.regex("settings_back_helper") & ~BANNED_USERS)
-async def helper_private(
-    client: app, update: types.Message | types.CallbackQuery
-):
+async def helper_private(client: app, update: types.Message | types.CallbackQuery):
     is_callback = isinstance(update, types.CallbackQuery)
     if is_callback:
         try:

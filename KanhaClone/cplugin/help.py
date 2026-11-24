@@ -41,9 +41,7 @@ def get_random_help_img():
 
 @Client.on_message(filters.command(["help"]) & filters.private & ~BANNED_USERS)
 @Client.on_callback_query(filters.regex("settings_back_helper") & ~BANNED_USERS)
-async def helper_private(
-    client: app, update: types.Message | types.CallbackQuery
-):
+async def helper_private(client: app, update: types.Message | types.CallbackQuery):
     bot = await client.get_me()
 
     C_BOT_OWNER_ID = await get_owner_id_from_db(bot.id)

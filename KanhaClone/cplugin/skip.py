@@ -20,9 +20,7 @@ from KanhaClone.core.call import Kanha
 from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
 from KanhaClone.misc import db
 from KanhaClone.utils.database import get_loop
-from KanhaClone.utils.database.clonedb import (
-    get_cloned_support_chat,
-)
+from KanhaClone.utils.database.clonedb import get_cloned_support_chat
 from KanhaClone.utils.inline import close_markup, stream_markup, stream_markup2
 from KanhaClone.utils.stream.autoclear import auto_clean
 from KanhaClone.utils.thumbnails import get_thumb
