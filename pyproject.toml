@@ -30,7 +30,7 @@ dependencies = [
   "spotipy==2.26.0",
   "tgcrypto==1.2.5",
   "unidecode==1.4.0",
-  "yt-dlp==2026.10.21",
+  "yt-dlp==2026.10.26",
   "kurigram @ git+https://github.com/KurimuzonAkuma/kurigram.git",
 ]
 
