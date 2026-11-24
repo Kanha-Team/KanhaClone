@@ -1,0 +1,4 @@
+# Global Code Owners for KanhaClone
+* @Kanha-Team
+*.py @Kanha-Team
+.github/ @Kanha-Team
