@@ -7,9 +7,12 @@
 # All rights reserved.
 #
 
+import random
+
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from config import SUPPORT_CHAT, adminlist, confirmer
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS, db
 from KanhaClone.utils.database import (
@@ -22,17 +25,15 @@ from KanhaClone.utils.database import (
     is_nonadmin_chat,
     is_skipmode,
 )
-from config import SUPPORT_CHAT, adminlist, confirmer
 from strings import get_string
 
 from ..formatters import int_to_alpha
 
 
-import random
-
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -44,6 +45,7 @@ def btn(text, style=None, icon=None, **kw):
 
 
 # Zeo
+
 
 def AdminRightsCheck(mystic):
     async def wrapper(client, message):
@@ -89,52 +91,51 @@ def AdminRightsCheck(mystic):
         if not await is_active_chat(chat_id):
             return await message.reply_text(_["general_5"])
         is_non_admin = await is_nonadmin_chat(message.chat.id)
-        if not is_non_admin:
-            if message.from_user.id not in SUDOERS:
-                admins = adminlist.get(message.chat.id)
-                if not admins:
-                    return await message.reply_text(_["admin_13"])
-                else:
-                    if message.from_user.id not in admins:
-                        if await is_skipmode(message.chat.id):
-                            upvote = await get_upvote_count(chat_id)
-                            text = f"""<b>ᴀᴅᴍɪɴ ʀɪɢʜᴛs ɴᴇᴇᴅᴇᴅ</b>
+        if not is_non_admin and message.from_user.id not in SUDOERS:
+            admins = adminlist.get(message.chat.id)
+            if not admins:
+                return await message.reply_text(_["admin_13"])
+            else:
+                if message.from_user.id not in admins:
+                    if await is_skipmode(message.chat.id):
+                        upvote = await get_upvote_count(chat_id)
+                        text = f"""<b>ᴀᴅᴍɪɴ ʀɪɢʜᴛs ɴᴇᴇᴅᴇᴅ</b>
 
 ʀᴇғʀᴇsʜ ᴀᴅᴍɪɴ ᴄᴀᴄʜᴇ ᴠɪᴀ : /reload
 
 » {upvote} ᴠᴏᴛᴇs ɴᴇᴇᴅᴇᴅ ғᴏʀ ᴘᴇʀғᴏʀᴍɪɴɢ ᴛʜɪs ᴀᴄᴛɪᴏɴ."""
 
-                            command = message.command[0]
-                            if command[0] == "c":
-                                command = command[1:]
-                            if command == "speed":
-                                return await message.reply_text(_["admin_14"])
-                            MODE = command.title()
-                            upl = InlineKeyboardMarkup(
-                                [
-                                    [
-                                        btn(
-                                            text="ᴠᴏᴛᴇ",
-                                            callback_data=f"ADMIN  UpVote|{chat_id}_{MODE}",
-                                        ),
-                                    ]
-                                ]
-                            )
-                            if chat_id not in confirmer:
-                                confirmer[chat_id] = {}
-                            try:
-                                vidid = db[chat_id][0]["vidid"]
-                                file = db[chat_id][0]["file"]
-                            except:
-                                return await message.reply_text(_["admin_14"])
-                            senn = await message.reply_text(text, reply_markup=upl)
-                            confirmer[chat_id][senn.id] = {
-                                "vidid": vidid,
-                                "file": file,
-                            }
-                            return
-                        else:
+                        command = message.command[0]
+                        if command[0] == "c":
+                            command = command[1:]
+                        if command == "speed":
                             return await message.reply_text(_["admin_14"])
+                        MODE = command.title()
+                        upl = InlineKeyboardMarkup(
+                            [
+                                [
+                                    btn(
+                                        text="ᴠᴏᴛᴇ",
+                                        callback_data=f"ADMIN  UpVote|{chat_id}_{MODE}",
+                                    ),
+                                ]
+                            ]
+                        )
+                        if chat_id not in confirmer:
+                            confirmer[chat_id] = {}
+                        try:
+                            vidid = db[chat_id][0]["vidid"]
+                            file = db[chat_id][0]["file"]
+                        except:
+                            return await message.reply_text(_["admin_14"])
+                        senn = await message.reply_text(text, reply_markup=upl)
+                        confirmer[chat_id][senn.id] = {
+                            "vidid": vidid,
+                            "file": file,
+                        }
+                        return
+                    else:
+                        return await message.reply_text(_["admin_14"])
 
         return await mystic(client, message, _, chat_id)
 
@@ -227,91 +228,6 @@ def ActualAdminCB(mystic):
         return await mystic(client, CallbackQuery, _)
 
     return wrapper
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Clone ka userbot in channels/groups ko join karega (join_call me use hota hai)

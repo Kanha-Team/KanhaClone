@@ -8,10 +8,9 @@
 #
 
 import random
-from typing import Dict, List, Union
 
 from KanhaClone import userbot
-from KanhaClone.core.mongo import mongodb, pymongodb
+from KanhaClone.core.mongo import mongodb
 
 authdb = mongodb.adminauth
 authuserdb = mongodb.authuser
@@ -82,14 +81,14 @@ async def set_queries(mode: int):
     )
 
 
-async def get_userss(chat_id: int) -> Dict[str, int]:
+async def get_userss(chat_id: int) -> dict[str, int]:
     ids = await userdb.find_one({"chat_id": chat_id})
     if not ids:
         return {}
     return ids["vidid"]
 
 
-async def get_user_top(chat_id: int, name: str) -> Union[bool, dict]:
+async def get_user_top(chat_id: int, name: str) -> bool | dict:
     ids = await get_userss(chat_id)
     if name in ids:
         return ids[name]
@@ -274,9 +273,7 @@ async def set_upvotes(chat_id: int, mode: int):
 async def is_autoend() -> bool:
     chat_id = 1234
     user = await autoenddb.find_one({"chat_id": chat_id})
-    if not user:
-        return False
-    return True
+    return user
 
 
 async def autoend_on():
@@ -409,10 +406,7 @@ async def get_active_chats() -> list:
 
 
 async def is_active_chat(chat_id: int) -> bool:
-    if chat_id not in active:
-        return False
-    else:
-        return True
+    return chat_id in active
 
 
 async def add_active_chat(chat_id: int):
@@ -430,10 +424,7 @@ async def get_active_video_chats() -> list:
 
 
 async def is_active_video_chat(chat_id: int) -> bool:
-    if chat_id not in activevideo:
-        return False
-    else:
-        return True
+    return chat_id in activevideo
 
 
 async def add_active_video_chat(chat_id: int):
@@ -448,9 +439,7 @@ async def remove_active_video_chat(chat_id: int):
 
 async def check_nonadmin_chat(chat_id: int) -> bool:
     user = await authdb.find_one({"chat_id": chat_id})
-    if not user:
-        return False
-    return True
+    return user
 
 
 async def is_nonadmin_chat(chat_id: int) -> bool:
@@ -483,9 +472,7 @@ async def remove_nonadmin_chat(chat_id: int):
 
 async def is_on_off(on_off: int) -> bool:
     onoff = await onoffdb.find_one({"on_off": on_off})
-    if not onoff:
-        return False
-    return True
+    return onoff
 
 
 async def add_on(on_off: int):
@@ -514,10 +501,7 @@ async def is_maintenance():
             maintenance.append(1)
             return False
     else:
-        if 1 in maintenance:
-            return False
-        else:
-            return True
+        return 1 not in maintenance
 
 
 async def maintenance_off():
@@ -540,9 +524,7 @@ async def maintenance_on():
 
 async def is_served_user(user_id: int) -> bool:
     user = await usersdb.find_one({"user_id": user_id})
-    if not user:
-        return False
-    return True
+    return user
 
 
 async def get_served_users() -> list:
@@ -568,9 +550,7 @@ async def get_served_chats() -> list:
 
 async def is_served_chat(chat_id: int) -> bool:
     chat = await chatsdb.find_one({"chat_id": chat_id})
-    if not chat:
-        return False
-    return True
+    return chat
 
 
 async def add_served_chat(chat_id: int):
@@ -605,21 +585,21 @@ async def whitelist_chat(chat_id: int) -> bool:
     return False
 
 
-async def _get_authusers(chat_id: int) -> Dict[str, int]:
+async def _get_authusers(chat_id: int) -> dict[str, int]:
     _notes = await authuserdb.find_one({"chat_id": chat_id})
     if not _notes:
         return {}
     return _notes["notes"]
 
 
-async def get_authuser_names(chat_id: int) -> List[str]:
+async def get_authuser_names(chat_id: int) -> list[str]:
     _notes = []
     for note in await _get_authusers(chat_id):
         _notes.append(note)
     return _notes
 
 
-async def get_authuser(chat_id: int, name: str) -> Union[bool, dict]:
+async def get_authuser(chat_id: int, name: str) -> bool | dict:
     name = name
     _notes = await _get_authusers(chat_id)
     if name in _notes:
@@ -662,9 +642,7 @@ async def get_gbanned() -> list:
 
 async def is_gbanned_user(user_id: int) -> bool:
     user = await gbansdb.find_one({"user_id": user_id})
-    if not user:
-        return False
-    return True
+    return user
 
 
 async def add_gban_user(user_id: int):
@@ -722,9 +700,7 @@ async def get_banned_count() -> int:
 
 async def is_banned_user(user_id: int) -> bool:
     user = await blockeddb.find_one({"user_id": user_id})
-    if not user:
-        return False
-    return True
+    return user
 
 
 async def add_banned_user(user_id: int):
@@ -753,9 +729,7 @@ async def get_private_served_chats() -> list:
 
 async def is_served_private_chat(chat_id: int) -> bool:
     chat = await privatedb.find_one({"chat_id": chat_id})
-    if not chat:
-        return False
-    return True
+    return chat
 
 
 async def add_private_chat(chat_id: int):
@@ -803,10 +777,7 @@ async def suggestion_off(chat_id: int):
 
 # Clean Mode
 async def is_cleanmode_on(chat_id: int) -> bool:
-    if chat_id not in cleanmode:
-        return True
-    else:
-        return False
+    return chat_id not in cleanmode
 
 
 async def cleanmode_off(chat_id: int):
@@ -819,6 +790,7 @@ async def cleanmode_on(chat_id: int):
         cleanmode.remove(chat_id)
     except:
         pass
+
 
 async def add_served_user_clone(user_id: int, bot_id: int):
     is_served = await usersdbc.find_one({"user_id": user_id, "bot_id": bot_id})

@@ -7,14 +7,13 @@
 # All rights reserved.
 #
 
-from KanhaClone import app
-from pyrogram import Client, filters
-
+from pyrogram import filters
 from pyrogram.enums import ParseMode
 
+from KanhaClone import app
 
 
-@app.on_message(filters.command('id'))
+@app.on_message(filters.command("id"))
 async def getid(client, message):
     chat = message.chat
     your_id = message.from_user.id

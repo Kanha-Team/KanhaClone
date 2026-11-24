@@ -7,5 +7,5 @@
 # All rights reserved.
 #
 
-from .database import *
 from .clonedb import *
+from .database import *

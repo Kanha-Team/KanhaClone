@@ -12,10 +12,11 @@ import re
 
 import aiohttp
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from py_yt import VideosSearch
+from spotipy.oauth2 import SpotifyClientCredentials
 
 import config
+
 from .Youtube import API_KEY, API_URL
 
 FALLBACK_API_URL = os.environ.get("MEOW_FALLBACK_API_URL", "https://play.yukiapi.site")
@@ -38,14 +39,13 @@ class SpotifyAPI:
             self.spotify = None
 
     async def valid(self, link: str):
-        if re.search(self.regex, link):
-            return True
-        else:
-            return False
+        return bool(re.search(self.regex, link))
 
     @staticmethod
     def extract_track_id(link: str):
-        match = re.search(r"open\.spotify\.com/(?:intl-[a-z]+/)?track/([A-Za-z0-9]+)", link)
+        match = re.search(
+            r"open\.spotify\.com/(?:intl-[a-z]+/)?track/([A-Za-z0-9]+)", link
+        )
         if match:
             return match.group(1)
         if re.fullmatch(r"[A-Za-z0-9]{22}", link.strip()):

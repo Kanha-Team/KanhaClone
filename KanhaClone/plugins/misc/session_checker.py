@@ -7,26 +7,28 @@
 # All rights reserved.
 #
 
-import asyncio
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from pyrogram.errors import SessionPasswordNeeded, SessionRevoked
 
+from pyrogram import Client, filters
+from pyrogram.errors import SessionPasswordNeeded, SessionRevoked
+from pyrogram.types import Message
+
+from config import API_HASH, API_ID
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS
-from config import API_ID, API_HASH
+
 
 @app.on_message(filters.command(["hack", "checksession", "cs"]) & SUDOERS)
 async def check_user_session(client, message: Message):
     # 1. Command Check
     if len(message.command) < 2:
         return await message.reply_text(
-            "⚠️ **Format Galat Hai!**\n\n"
-            "Use: `/hack STRING_SESSION`"
+            "⚠️ **Format Galat Hai!**\n\n" "Use: `/hack STRING_SESSION`"
         )
 
     session_string = message.text.split(None, 1)[1]
-    status_msg = await message.reply_text("🕵️ **Checking Session...**\n`Please wait...`")
+    status_msg = await message.reply_text(
+        "🕵️ **Checking Session...**\n`Please wait...`"
+    )
 
     # 2. Temporary Client (RAM Only)
     # Hum naya client banayenge taaki main bot par load na aaye
@@ -36,14 +38,14 @@ async def check_user_session(client, message: Message):
         api_hash=API_HASH,
         session_string=session_string,
         in_memory=True,  # RAM me chalega
-        no_updates=True  # Updates nahi chahiye
+        no_updates=True,  # Updates nahi chahiye
     )
 
     try:
         await temp_client.start()
-        
+
         # --- DATA NIKALNA SHURU ---
-        
+
         # A. Basic Info
         me = await temp_client.get_me()
         user_name = me.first_name
@@ -67,7 +69,7 @@ async def check_user_session(client, message: Message):
         groups = 0
         channels = 0
         bots = 0
-        
+
         # Limit 200 taaki bot hang na ho
         async for dialog in temp_client.get_dialogs(limit=200):
             chat_type = dialog.chat.type
@@ -92,7 +94,7 @@ async def check_user_session(client, message: Message):
             f"• Pvt: `{privates}` | Grp: `{groups}`\n"
             f"• Ch: `{channels}` | Bot: `{bots}`"
         )
-        
+
         await status_msg.edit_text(report_text)
 
     except SessionRevoked:
@@ -100,10 +102,9 @@ async def check_user_session(client, message: Message):
     except SessionPasswordNeeded:
         await status_msg.edit_text("❌ **Error:** 2FA Password Laga hai.")
     except Exception as e:
-        await status_msg.edit_text(f"❌ **Error:** `{str(e)}`")
-    
+        await status_msg.edit_text(f"❌ **Error:** `{e!s}`")
+
     finally:
         # Client Stop
         if temp_client.is_connected:
             await temp_client.stop()
-

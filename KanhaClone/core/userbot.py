@@ -7,6 +7,8 @@
 # All rights reserved.
 #
 
+import sys
+
 from pyrogram import Client
 
 import config
@@ -28,7 +30,7 @@ class Userbot(Client):
         )
 
     async def start(self):
-        LOGGER(__name__).info(f"Starting Assistants...")
+        LOGGER(__name__).info("Starting Assistants...")
         if config.STRING1:
             await self.one.start()
             try:
@@ -43,16 +45,15 @@ class Userbot(Client):
                 LOGGER(__name__).error(
                     "Assistant Account 1 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin!"
                 )
-                exit()
+                sys.exit()
             self.one.id = self.one.me.id
             self.one.name = self.one.me.mention
             self.one.username = self.one.me.username
             assistantids.append(self.one.id)
             LOGGER(__name__).info(f"Assistant Started as {self.one.name}")
 
-
     async def stop(self):
-        LOGGER(__name__).info(f"Stopping Assistants...")
+        LOGGER(__name__).info("Stopping Assistants...")
         try:
             if config.STRING1:
                 await self.one.stop()

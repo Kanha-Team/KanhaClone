@@ -7,32 +7,32 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from KanhaClone.utils.database import (
-    get_active_chats,
-    get_active_video_chats,
-)
-from KanhaClone.utils.database.clonedb import get_served_chats_clone, clonebotdb
+from KanhaClone.utils.database import get_active_chats, get_active_video_chats
+from KanhaClone.utils.database.clonedb import clonebotdb, get_served_chats_clone
+
 
 @Client.on_message(filters.command(["ac", "activevc", "activevoice"]))
 async def start(client: Client, message: Message):
-    
+
     bot_id = client.me.id
     user_id = message.from_user.id
-    
+
     # Fetch Owner from Database
     clone_data = await clonebotdb.find_one({"bot_id": bot_id})
-    
+
     if not clone_data:
-        return 
-        
+        return
+
     owner_id = clone_data.get("user_id")
 
     # STRICT OWNER CHECK
     if user_id != owner_id:
-        return await message.reply_text("❌ **Only the Bot Owner can view these stats.**")
+        return await message.reply_text(
+            "❌ **Only the Bot Owner can view these stats.**"
+        )
 
     waiting_msg = await message.reply_text("🔄 **Checking active groups...**")
 
@@ -67,10 +67,10 @@ async def start(client: Client, message: Message):
         f"🎧 **Active Audio:** `{my_audio_count}`\n"
         f"📹 **Active Video:** `{my_video_count}`\n"
     )
-    
+
     await waiting_msg.edit_text(
         text,
         reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("✯ Close ✯", callback_data=f"close")]]
+            [[InlineKeyboardButton("✯ Close ✯", callback_data="close")]]
         ),
     )

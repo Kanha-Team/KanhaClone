@@ -10,24 +10,27 @@
 
 import asyncio
 import importlib
+import sys
 
 from pyrogram import idle
 from pytgcalls.exceptions import NoActiveGroupCall
 
 import config
+from config import BANNED_USERS
 from KanhaClone import LOGGER, app, userbot
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import sudo
 from KanhaClone.plugins import ALL_MODULES
-from KanhaClone.utils.database import get_banned_users, get_gbanned
-from config import BANNED_USERS
 from KanhaClone.plugins.tools.clone import restart_bots
+from KanhaClone.utils.database import get_banned_users, get_gbanned
 
 
 async def init():
     if not config.STRING1:
-        LOGGER(__name__).error("String Session not filled, please Provide a valid session.")
-        exit()
+        LOGGER(__name__).error(
+            "String Session not filled, please Provide a valid session."
+        )
+        sys.exit()
     await sudo()
     try:
         users = await get_gbanned()
@@ -50,7 +53,7 @@ async def init():
         LOGGER("KanhaClone").error(
             "Please turn on the videochat of your log group/channel.\n\nStopping Bot..."
         )
-        exit()
+        sys.exit()
     except:
         pass
     await Kanha.decorators()

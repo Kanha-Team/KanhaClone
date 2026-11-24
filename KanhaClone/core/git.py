@@ -9,12 +9,11 @@
 
 import asyncio
 import shlex
-from typing import Tuple
 
 from ..logging import LOGGER
 
 
-def install_req(cmd: str) -> Tuple[str, str, int, int]:
+def install_req(cmd: str) -> tuple[str, str, int, int]:
     async def install_requirements():
         args = shlex.split(cmd)
         process = await asyncio.create_subprocess_exec(

@@ -11,6 +11,7 @@ import asyncio
 import os
 import shutil
 import socket
+import sys
 from datetime import datetime
 
 import urllib3
@@ -36,7 +37,12 @@ async def is_heroku():
     return "heroku" in socket.getfqdn()
 
 
-@app.on_message(filters.command(["getlog", "logs", "getlogs"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]) & SUDOERS)
+@app.on_message(
+    filters.command(
+        ["getlog", "logs", "getlogs"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]
+    )
+    & SUDOERS
+)
 @language
 async def log_(client, message, _):
     try:
@@ -45,12 +51,16 @@ async def log_(client, message, _):
         await message.reply_text(_["server_1"])
 
 
-@app.on_message(filters.command(["update", "gitpull"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]) & SUDOERS)
+@app.on_message(
+    filters.command(
+        ["update", "gitpull"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]
+    )
+    & SUDOERS
+)
 @language
 async def update_(client, message, _):
-    if await is_heroku():
-        if HAPP is None:
-            return await message.reply_text(_["server_2"])
+    if await is_heroku() and HAPP is None:
+        return await message.reply_text(_["server_2"])
     response = await message.reply_text(_["server_3"])
     try:
         repo = Repo()
@@ -116,7 +126,7 @@ async def update_(client, message, _):
     else:
         os.system("pip3 install -U uv && uv pip install .")
         os.system(f"kill -9 {os.getpid()} && bash start")
-        exit()
+        sys.exit()
 
 
 @app.on_message(filters.command(["restart"]) & SUDOERS)

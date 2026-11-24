@@ -8,11 +8,10 @@
 #
 
 import asyncio
-from typing import Union
 
+from config import autoclean, time_to_seconds
 from KanhaClone.misc import db
 from KanhaClone.utils.formatters import check_duration, seconds_to_min
-from config import autoclean, time_to_seconds
 
 
 async def put_queue(
@@ -25,7 +24,7 @@ async def put_queue(
     vidid,
     user_id,
     stream,
-    forceplay: Union[bool, str] = None,
+    forceplay: bool | str | None = None,
 ):
     title = title.title()
     try:
@@ -65,7 +64,7 @@ async def put_queue_index(
     user,
     vidid,
     stream,
-    forceplay: Union[bool, str] = None,
+    forceplay: bool | str | None = None,
 ):
     if "20.212.146.162" in vidid:
         try:

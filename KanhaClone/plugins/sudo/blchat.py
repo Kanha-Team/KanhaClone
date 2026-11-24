@@ -10,11 +10,11 @@
 from pyrogram import filters
 from pyrogram.types import Message
 
+from config import BANNED_USERS
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS
 from KanhaClone.utils.database import blacklist_chat, blacklisted_chats, whitelist_chat
 from KanhaClone.utils.decorators.language import language
-from config import BANNED_USERS
 
 
 @app.on_message(filters.command(["blchat", "blacklistchat"]) & SUDOERS)

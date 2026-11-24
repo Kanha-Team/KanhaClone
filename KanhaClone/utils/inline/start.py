@@ -7,17 +7,18 @@
 # All rights reserved.
 #
 
-import random 
+import random
+
 from pyrogram.types import InlineKeyboardButton
+
 import config
 from KanhaClone import app
 
 
-import random
-
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -31,14 +32,12 @@ def btn(text, style=None, icon=None, **kw):
 def start_panel(_):
     buttons = [
         [
-            btn(
-                text=_["SO_B_1"], 
-                url=f"https://t.me/{app.username}?startgroup=true"
-            ),
+            btn(text=_["SO_B_1"], url=f"https://t.me/{app.username}?startgroup=true"),
             btn(text=_["S_B_2"], url=config.SUPPORT_CHAT),
         ],
     ]
     return buttons
+
 
 def private_panel(_):
     buttons = [
@@ -49,28 +48,20 @@ def private_panel(_):
             )
         ],
         [
-            btn(
-                text=_["S_B_10"],
-                callback_data="Kanha_Anu"),
-            btn(
-                text="💌 ʏᴛ-ᴀᴘɪ",
-                callback_data="api_status"),
+            btn(text=_["S_B_10"], callback_data="Kanha_Anu"),
+            btn(text="💌 ʏᴛ-ᴀᴘɪ", callback_data="api_status"),
         ],
         [
-            btn(
-                text="🖨 ᴄʟᴏɴᴇ",
-                callback_data="pikachu"
-            ),
+            btn(text="🖨 ᴄʟᴏɴᴇ", callback_data="pikachu"),
             btn(
                 text="🛡️ ᴘʀɪᴠᴀᴄʏ",
                 url="https://graph.org/KanhaMusic-04-18",
             ),
         ],
-        [
-            btn(text=_["S_B_4"], callback_data="settings_back_helper")
-        ],
+        [btn(text=_["S_B_4"], callback_data="settings_back_helper")],
     ]
     return buttons
+
 
 def support_panel(_):
     buttons = [
@@ -78,11 +69,10 @@ def support_panel(_):
             btn(text=_["S_B_2"], url=config.SUPPORT_CHAT),
             btn(text=_["S_B_6"], url=config.SUPPORT_CHANNEL),
         ],
-        [
-            btn(text=_["BACK_BUTTON"], callback_data="settingsback_helper")
-        ]
+        [btn(text=_["BACK_BUTTON"], callback_data="settingsback_helper")],
     ]
     return buttons
+
 
 def about_panel(_):
     buttons = [
@@ -92,12 +82,8 @@ def about_panel(_):
         ],
         [
             btn(text=_["S_B_6"], url=config.SUPPORT_CHANNEL),
-            btn(text=_["S_B_2"], url=config.SUPPORT_CHAT)
+            btn(text=_["S_B_2"], url=config.SUPPORT_CHAT),
         ],
-        [
-            btn(text=_["BACK_BUTTON"], callback_data="settingsback_helper")
-        ]
+        [btn(text=_["BACK_BUTTON"], callback_data="settingsback_helper")],
     ]
     return buttons
-
-

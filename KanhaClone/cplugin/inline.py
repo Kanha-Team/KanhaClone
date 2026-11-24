@@ -7,29 +7,29 @@
 # All rights reserved.
 #
 
+from py_yt import VideosSearch
+from pyrogram import Client
 from pyrogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     InlineQueryResultPhoto,
 )
-from py_yt import VideosSearch
-from pyrogram import filters, Client
-from KanhaClone import app
-from KanhaClone.utils.inlinequery import answer
+
 from config import BANNED_USERS
+from KanhaClone.utils.inlinequery import answer
 
 
 @Client.on_inline_query(~BANNED_USERS)
 async def inline_query_handler(client, query):
     text = query.query.strip().lower()
     answers = []
-    
+
     # Bot ka mention nikala
     if client.me:
         cname = client.me.mention
     else:
         cname = (await client.get_me()).mention
-    
+
     if text.strip() == "":
         try:
             await client.answer_inline_query(query.id, results=answer, cache_time=10)
@@ -38,7 +38,7 @@ async def inline_query_handler(client, query):
     else:
         a = VideosSearch(text, limit=20)
         result = (await a.next()).get("result")
-        
+
         if result is None:
             return
 

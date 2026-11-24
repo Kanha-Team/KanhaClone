@@ -7,8 +7,10 @@
 # All rights reserved.
 #
 
+import sys
+
 from pyrogram import Client, errors
-from pyrogram.enums import ChatMemberStatus, ParseMode
+from pyrogram.enums import ChatMemberStatus
 
 import config
 
@@ -17,7 +19,7 @@ from ..logging import LOGGER
 
 class Kanha(Client):
     def __init__(self):
-        LOGGER(__name__).info(f"Starting Bot...")
+        LOGGER(__name__).info("Starting Bot...")
         super().__init__(
             name="KanhaClone",
             api_id=config.API_ID,
@@ -43,19 +45,19 @@ class Kanha(Client):
             LOGGER(__name__).error(
                 "Bot has failed to access the log group/channel. Make sure that you have added your bot to your log group/channel."
             )
-            exit()
+            sys.exit()
         except Exception as ex:
             LOGGER(__name__).error(
                 f"Bot has failed to access the log group/channel.\n  Reason : {type(ex).__name__}."
             )
-            exit()
+            sys.exit()
 
         a = await self.get_chat_member(config.LOGGER_ID, self.id)
         if a.status != ChatMemberStatus.ADMINISTRATOR:
             LOGGER(__name__).error(
                 "Please Promote your bot as an admin in your log group/channel."
             )
-            exit()
+            sys.exit()
         LOGGER(__name__).info(f"Music Bot Started as {self.name}")
 
     async def stop(self):

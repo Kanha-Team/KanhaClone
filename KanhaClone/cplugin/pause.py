@@ -7,23 +7,22 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from KanhaClone import app
-from KanhaClone.core.call import Kanha
-from KanhaClone.utils.database import music_off
 from config import BANNED_USERS
-
+from KanhaClone.core.call import Kanha
 from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
+from KanhaClone.utils.database import music_off
+
 
 @Client.on_message(filters.command(["pause", "cpause"]) & filters.group & ~BANNED_USERS)
-@AdminRightsCheck # <-- Ab ye Clone Owner/Sudo ko allow karega
+@AdminRightsCheck  # <-- Ab ye Clone Owner/Sudo ko allow karega
 async def pause_admin(cli, message: Message, _, chat_id):
-    
+
     # Music ko Database me OFF mark karo (Taaki Resume command ko pata chale)
     await music_off(chat_id)
-    
+
     # Asli stream ko pause karo
     await Kanha.pause_stream(chat_id)
 

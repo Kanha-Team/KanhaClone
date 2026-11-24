@@ -7,16 +7,15 @@
 # All rights reserved.
 #
 
-from typing import Union
+import random
 
 from pyrogram.types import InlineKeyboardButton
 
 
-import random
-
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -25,7 +24,6 @@ def btn(text, style=None, icon=None, **kw):
         return InlineKeyboardButton(text=text, style=random.choice(styles), **kw)
     except (ImportError, TypeError, AttributeError):
         return InlineKeyboardButton(text=text, **kw)
-
 
 
 def setting_markup(_):
@@ -47,7 +45,7 @@ def setting_markup(_):
     return buttons
 
 
-def vote_mode_markup(_, current, mode: Union[bool, str] = None):
+def vote_mode_markup(_, current, mode: bool | str | None = None):
     buttons = [
         [
             btn(text="Vᴏᴛɪɴɢ ᴍᴏᴅᴇ ➜", callback_data="VOTEANSWER"),
@@ -75,7 +73,7 @@ def vote_mode_markup(_, current, mode: Union[bool, str] = None):
     return buttons
 
 
-def auth_users_markup(_, status: Union[bool, str] = None):
+def auth_users_markup(_, status: bool | str | None = None):
     buttons = [
         [
             btn(text=_["ST_B_7"], callback_data="AUTHANSWER"),
@@ -100,9 +98,9 @@ def auth_users_markup(_, status: Union[bool, str] = None):
 
 def playmode_users_markup(
     _,
-    Direct: Union[bool, str] = None,
-    Group: Union[bool, str] = None,
-    Playtype: Union[bool, str] = None,
+    Direct: bool | str | None = None,
+    Group: bool | str | None = None,
+    Playtype: bool | str | None = None,
 ):
     buttons = [
         [

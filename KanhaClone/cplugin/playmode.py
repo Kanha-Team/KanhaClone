@@ -7,14 +7,13 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
+from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, Message
 
-from KanhaClone import app
+from config import BANNED_USERS
 from KanhaClone.utils.database import get_playmode, get_playtype, is_nonadmin_chat
 from KanhaClone.utils.decorators import language
 from KanhaClone.utils.inline.settings import playmode_users_markup
-from config import BANNED_USERS
 
 
 @Client.on_message(
@@ -31,21 +30,21 @@ async def playmode_(client, message: Message, _):
         Direct = True
     else:
         Direct = None
-    
+
     is_non_admin = await is_nonadmin_chat(message.chat.id)
     if not is_non_admin:
         Group = True
     else:
         Group = None
-    
+
     playty = await get_playtype(message.chat.id)
     if playty == "Everyone":
         Playtype = None
     else:
         Playtype = True
-    
+
     buttons = playmode_users_markup(_, Direct, Group, Playtype)
-    
+
     await message.reply_text(
         _["play_22"].format(message.chat.title),
         reply_markup=InlineKeyboardMarkup(buttons),

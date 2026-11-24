@@ -9,38 +9,39 @@
 
 import asyncio
 import time
-from pyrogram import Client, filters
-from pyrogram import filters
-from pyrogram.enums import ChatMembersFilter
-from pyrogram.types import CallbackQuery, Message
-import re
-from os import getenv
-from pyrogram.types import Message
 
 from dotenv import load_dotenv
 from pyrogram import filters
+from pyrogram.enums import ChatMembersFilter
+from pyrogram.types import CallbackQuery, Message
 
 load_dotenv()
 
+from dotenv import load_dotenv
+
+from config import BANNED_USERS, adminlist, lyrical
 from KanhaClone import app
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import db
 from KanhaClone.utils.database import get_assistant, get_authuser_names, get_cmode
 from KanhaClone.utils.decorators import ActualAdminCB, AdminActual, language
 from KanhaClone.utils.formatters import alpha_to_int, get_readable_time
-from config import BANNED_USERS, adminlist, lyrical
-from dotenv import load_dotenv
 
 rel = {}
 
 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 @app.on_message(
-    filters.command(["admincache", "reload", "refresh"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]) & filters.group & ~BANNED_USERS
+    filters.command(
+        ["admincache", "reload", "refresh"],
+        prefixes=["/", "!", "%", ",", "", ".", "@", "#"],
+    )
+    & filters.group
+    & ~BANNED_USERS
 )
 @language
 async def reload_admin_cache(client, message: Message, _):
@@ -50,7 +51,7 @@ async def reload_admin_cache(client, message: Message, _):
         else:
             saved = rel[message.chat.id]
             if saved > time.time():
-                left = get_readable_time((int(saved) - int(time.time())))
+                left = get_readable_time(int(saved) - int(time.time()))
                 return await message.reply_text(_["reload_1"].format(left))
         adminlist[message.chat.id] = []
         async for user in app.get_chat_members(
@@ -111,14 +112,13 @@ async def restartbot(client, message: Message, _):
 
 ##########
 
+
 @app.on_callback_query(filters.regex("close") & ~BANNED_USERS)
 async def close_menu(_, query: CallbackQuery):
     try:
         await query.answer()
         await query.message.delete()
-        umm = await query.message.reply_text(
-            f"ᴄʟᴏꜱᴇ ʙʏ : {query.from_user.mention}"
-        )
+        umm = await query.message.reply_text(f"ᴄʟᴏꜱᴇ ʙʏ : {query.from_user.mention}")
         await asyncio.sleep(2)
         await umm.delete()
     except:
@@ -148,4 +148,3 @@ async def stop_download(client, CallbackQuery: CallbackQuery, _):
         except:
             return await CallbackQuery.answer(_["tg_8"], show_alert=True)
     await CallbackQuery.answer(_["tg_9"], show_alert=True)
-

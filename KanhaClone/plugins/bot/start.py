@@ -7,15 +7,17 @@
 # All rights reserved.
 #
 
-import time
-import random
 import asyncio
+import random
+import time
+
+from py_yt import VideosSearch
 from pyrogram import filters
 from pyrogram.enums import ChatType, ParseMode
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from py_yt import VideosSearch
 
 import config
+from config import BANNED_USERS, START_IMG_URL
 from KanhaClone import app
 from KanhaClone.misc import _boot_
 from KanhaClone.plugins.sudo.sudoers import sudoers_list
@@ -30,7 +32,6 @@ from KanhaClone.utils.database import (
 from KanhaClone.utils.decorators.language import LanguageStart
 from KanhaClone.utils.formatters import get_readable_time
 from KanhaClone.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS, START_IMG_URL
 from strings import get_string
 
 
@@ -67,7 +68,7 @@ async def start_pm(client, message: Message, _):
                 caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
                 parse_mode=ParseMode.HTML,
-                has_spoiler=True
+                has_spoiler=True,
             )
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
@@ -75,7 +76,7 @@ async def start_pm(client, message: Message, _):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
                     text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>✦ ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n<b>✦ ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
-                    parse_mode=ParseMode.HTML
+                    parse_mode=ParseMode.HTML,
                 )
             return
         if name[0:3] == "inf":
@@ -110,13 +111,13 @@ async def start_pm(client, message: Message, _):
                 caption=searched_text,
                 reply_markup=key,
                 parse_mode=ParseMode.HTML,
-                has_spoiler=True
+                has_spoiler=True,
             )
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
                     text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>✦ ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n<b>✦ ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
-                    parse_mode=ParseMode.HTML
+                    parse_mode=ParseMode.HTML,
                 )
     else:
         out = private_panel(_)
@@ -125,13 +126,13 @@ async def start_pm(client, message: Message, _):
             caption=_["start_2"].format(message.from_user.mention, app.mention),
             reply_markup=InlineKeyboardMarkup(out),
             parse_mode=ParseMode.HTML,
-            has_spoiler=True
+            has_spoiler=True,
         )
         if await is_on_off(2):
             return await app.send_message(
                 chat_id=config.LOGGER_ID,
                 text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>✦ ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n<b>✦ ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
 
 
@@ -145,7 +146,7 @@ async def start_gp(client, message: Message, _):
         caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
         parse_mode=ParseMode.HTML,
-        has_spoiler=True
+        has_spoiler=True,
     )
     return await add_served_chat(message.chat.id)
 
@@ -173,7 +174,7 @@ async def welcome(client, message: Message):
                             config.SUPPORT_CHAT,
                         ),
                         disable_web_page_preview=True,
-                        parse_mode=ParseMode.HTML
+                        parse_mode=ParseMode.HTML,
                     )
                     return await app.leave_chat(message.chat.id)
 
@@ -186,7 +187,7 @@ async def welcome(client, message: Message):
                         app.mention,
                     ),
                     reply_markup=InlineKeyboardMarkup(out),
-                    parse_mode=ParseMode.HTML
+                    parse_mode=ParseMode.HTML,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()

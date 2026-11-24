@@ -7,25 +7,26 @@
 # All rights reserved.
 #
 
-import asyncio
 import os
 import re
-from typing import Union
+
+import aiohttp
 import yt_dlp
+from py_yt import Playlist, VideosSearch
 from pyrogram.enums import MessageEntityType
 from pyrogram.types import Message
-from py_yt import VideosSearch, Playlist
-import aiohttp
 
 API_URL = os.environ.get("MEOW_API_URL", "https://music.yukiapi.site")
-API_KEY = os.environ.get("MEOW_API_KEY", "yuki_95a6c913e9b5f9094b013ce8e963a320") # 🔑 Get Key: @MeowApiRobot On Telegram 
+API_KEY = os.environ.get(
+    "MEOW_API_KEY", "yuki_95a6c913e9b5f9094b013ce8e963a320"
+)  # 🔑 Get Key: @MeowApiRobot On Telegram
 
 DOWNLOAD_DIR = "downloads"
 
 
 def time_to_seconds(time):
     stringt = str(time)
-    return sum(int(x) * 60 ** i for i, x in enumerate(reversed(stringt.split(":"))))
+    return sum(int(x) * 60**i for i, x in enumerate(reversed(stringt.split(":"))))
 
 
 async def download_song(link: str) -> str:
@@ -35,20 +36,24 @@ async def download_song(link: str) -> str:
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
-    
+
     if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
         return file_path
 
     try:
         async with aiohttp.ClientSession() as session:
-            stream_url = f"{API_URL}/stream/{video_id}?key={API_KEY}&type=audio&quality=128"
-            async with session.get(stream_url, timeout=aiohttp.ClientTimeout(total=300)) as resp:
+            stream_url = (
+                f"{API_URL}/stream/{video_id}?key={API_KEY}&type=audio&quality=128"
+            )
+            async with session.get(
+                stream_url, timeout=aiohttp.ClientTimeout(total=300)
+            ) as resp:
                 if resp.status != 200:
                     return None
                 with open(file_path, "wb") as f:
                     async for chunk in resp.content.iter_chunked(131072):
                         f.write(chunk)
-        
+
         if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
             return file_path
         return None
@@ -68,20 +73,24 @@ async def download_video(link: str) -> str:
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
-    
+
     if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
         return file_path
 
     try:
         async with aiohttp.ClientSession() as session:
-            stream_url = f"{API_URL}/stream/{video_id}?key={API_KEY}&type=video&quality=480"
-            async with session.get(stream_url, timeout=aiohttp.ClientTimeout(total=600)) as resp:
+            stream_url = (
+                f"{API_URL}/stream/{video_id}?key={API_KEY}&type=video&quality=480"
+            )
+            async with session.get(
+                stream_url, timeout=aiohttp.ClientTimeout(total=600)
+            ) as resp:
                 if resp.status != 200:
                     return None
                 with open(file_path, "wb") as f:
                     async for chunk in resp.content.iter_chunked(131072):
                         f.write(chunk)
-        
+
         if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
             return file_path
         return None
@@ -102,12 +111,12 @@ class YouTubeAPI:
         self.listbase = "https://youtube.com/playlist?list="
         self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
-    async def exists(self, link: str, videoid: Union[bool, str] = None):
+    async def exists(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         return bool(re.search(self.regex, link))
 
-    async def url(self, message_1: Message) -> Union[str, None]:
+    async def url(self, message_1: Message) -> str | None:
         messages = [message_1]
         if message_1.reply_to_message:
             messages.append(message_1.reply_to_message)
@@ -116,14 +125,14 @@ class YouTubeAPI:
                 for entity in message.entities:
                     if entity.type == MessageEntityType.URL:
                         text = message.text or message.caption
-                        return text[entity.offset: entity.offset + entity.length]
+                        return text[entity.offset : entity.offset + entity.length]
             elif message.caption_entities:
                 for entity in message.caption_entities:
                     if entity.type == MessageEntityType.TEXT_LINK:
                         return entity.url
         return None
 
-    async def details(self, link: str, videoid: Union[bool, str] = None):
+    async def details(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -137,7 +146,7 @@ class YouTubeAPI:
             duration_sec = int(time_to_seconds(duration_min)) if duration_min else 0
         return title, duration_min, duration_sec, thumbnail, vidid
 
-    async def title(self, link: str, videoid: Union[bool, str] = None):
+    async def title(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -146,7 +155,7 @@ class YouTubeAPI:
         for result in (await results.next())["result"]:
             return result["title"]
 
-    async def duration(self, link: str, videoid: Union[bool, str] = None):
+    async def duration(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -155,7 +164,7 @@ class YouTubeAPI:
         for result in (await results.next())["result"]:
             return result["duration"]
 
-    async def thumbnail(self, link: str, videoid: Union[bool, str] = None):
+    async def thumbnail(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -164,7 +173,7 @@ class YouTubeAPI:
         for result in (await results.next())["result"]:
             return result["thumbnails"][0]["url"].split("?")[0]
 
-    async def video(self, link: str, videoid: Union[bool, str] = None):
+    async def video(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -177,7 +186,7 @@ class YouTubeAPI:
         except Exception as e:
             return 0, f"Video download error: {e}"
 
-    async def playlist(self, link, limit, user_id, videoid: Union[bool, str] = None):
+    async def playlist(self, link, limit, user_id, videoid: bool | str | None = None):
         if videoid:
             link = self.listbase + link
         if "&" in link:
@@ -197,7 +206,7 @@ class YouTubeAPI:
             ids.append(vid)
         return ids
 
-    async def track(self, link: str, videoid: Union[bool, str] = None):
+    async def track(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -218,7 +227,7 @@ class YouTubeAPI:
         }
         return track_details, vidid
 
-    async def formats(self, link: str, videoid: Union[bool, str] = None):
+    async def formats(self, link: str, videoid: bool | str | None = None):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -245,7 +254,9 @@ class YouTubeAPI:
                     continue
         return formats_available, link
 
-    async def slider(self, link: str, query_type: int, videoid: Union[bool, str] = None):
+    async def slider(
+        self, link: str, query_type: int, videoid: bool | str | None = None
+    ):
         if videoid:
             link = self.base + link
         if "&" in link:
@@ -262,12 +273,12 @@ class YouTubeAPI:
         self,
         link: str,
         mystic,
-        video: Union[bool, str] = None,
-        videoid: Union[bool, str] = None,
-        songaudio: Union[bool, str] = None,
-        songvideo: Union[bool, str] = None,
-        format_id: Union[bool, str] = None,
-        title: Union[bool, str] = None,
+        video: bool | str | None = None,
+        videoid: bool | str | None = None,
+        songaudio: bool | str | None = None,
+        songvideo: bool | str | None = None,
+        format_id: bool | str | None = None,
+        title: bool | str | None = None,
     ) -> str:
         if videoid:
             link = self.base + link

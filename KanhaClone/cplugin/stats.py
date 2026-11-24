@@ -12,14 +12,14 @@ import random
 from sys import version as pyver
 
 import psutil
+from pyrogram import Client, filters
 from pyrogram import __version__ as pyrover
-from pyrogram import filters, Client
 from pyrogram.errors import MessageIdInvalid
 from pyrogram.types import InputMediaPhoto, Message
 from pytgcalls.__version__ import __version__ as pytgver
 
 import config
-from KanhaClone import app
+from config import BANNED_USERS
 from KanhaClone.core.userbot import assistants
 from KanhaClone.misc import SUDOERS, mongodb
 from KanhaClone.plugins import ALL_MODULES
@@ -30,7 +30,6 @@ from KanhaClone.utils.database import (
 )
 from KanhaClone.utils.decorators.language import language, languageCB
 from KanhaClone.utils.inline.stats import back_stats_buttons, stats_buttons
-from config import BANNED_USERS
 
 
 def get_random_stats_img():
@@ -38,22 +37,21 @@ def get_random_stats_img():
         if isinstance(config.STATS_IMG_URL, list):
             return random.choice(config.STATS_IMG_URL)
         return config.STATS_IMG_URL
-    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg" # Fallback
+    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg"  # Fallback
 
 
 @Client.on_message(filters.command(["stats", "gstats"]) & ~BANNED_USERS)
 @language
 async def stats_global(client: Client, message: Message, _):
     a = await client.get_me()
-    bot_id = a.id
 
-    upl = stats_buttons(_, True if message.from_user.id in SUDOERS else False)
-    
+    upl = stats_buttons(_, message.from_user.id in SUDOERS)
+
     await message.reply_photo(
         photo=get_random_stats_img(),
         caption=_["gstats_2"].format(a.mention),
         reply_markup=upl,
-        has_spoiler=True
+        has_spoiler=True,
     )
 
 
@@ -61,9 +59,8 @@ async def stats_global(client: Client, message: Message, _):
 @languageCB
 async def home_stats(client, CallbackQuery, _):
     a = await client.get_me()
-    bot_id = a.id
-    upl = stats_buttons(_, True if CallbackQuery.from_user.id in SUDOERS else False)
-    
+    upl = stats_buttons(_, CallbackQuery.from_user.id in SUDOERS)
+
     # Back button typically edits text. If you want to change media, use edit_message_media.
     await CallbackQuery.edit_message_text(
         text=_["gstats_2"].format(a.mention),
@@ -81,14 +78,14 @@ async def overall_stats(client, CallbackQuery, _):
     except:
         pass
     upl = back_stats_buttons(_)
-    
+
     # Edit text to show loading...
     await CallbackQuery.edit_message_text(_["gstats_1"].format(a.mention))
-    
+
     # Fetch Clone Stats
     served_chats = len(await get_served_chats_clone(bot_id))
     served_users = len(await get_served_users_clone(bot_id))
-    
+
     text = _["gstats_3"].format(
         a.mention,
         len(assistants),
@@ -100,14 +97,17 @@ async def overall_stats(client, CallbackQuery, _):
         config.AUTO_LEAVING_ASSISTANT,
         config.DURATION_LIMIT_MIN,
     )
-    
+
     med = InputMediaPhoto(media=get_random_stats_img(), caption=text, has_spoiler=True)
-    
+
     try:
         await CallbackQuery.edit_message_media(media=med, reply_markup=upl)
     except MessageIdInvalid:
         await CallbackQuery.message.reply_photo(
-            photo=get_random_stats_img(), caption=text, reply_markup=upl, has_spoiler=True
+            photo=get_random_stats_img(),
+            caption=text,
+            reply_markup=upl,
+            has_spoiler=True,
         )
 
 
@@ -123,9 +123,9 @@ async def bot_stats(client, CallbackQuery, _):
         await CallbackQuery.answer()
     except:
         pass
-        
+
     await CallbackQuery.edit_message_text(_["gstats_1"].format(a.mention))
-    
+
     p_core = psutil.cpu_count(logical=False)
     t_core = psutil.cpu_count(logical=True)
     ram = str(round(psutil.virtual_memory().total / (1024.0**3))) + " GB"
@@ -137,7 +137,7 @@ async def bot_stats(client, CallbackQuery, _):
             cpu_freq = f"{round(cpu_freq, 2)}MHz"
     except:
         cpu_freq = "Failed to fetch"
-    
+
     hdd = psutil.disk_usage("/")
     total = hdd.total / (1024.0**3)
     used = hdd.used / (1024.0**3)
@@ -145,11 +145,11 @@ async def bot_stats(client, CallbackQuery, _):
     call = await mongodb.command("dbstats")
     datasize = call["dataSize"] / 1024
     storage = call["storageSize"] / 1024
-    
+
     # Fetch Clone Stats
     served_chats = len(await get_served_chats_clone(bot_id))
     served_users = len(await get_served_users_clone(bot_id))
-    
+
     text = _["gstats_5"].format(
         a.mention,
         len(ALL_MODULES),
@@ -173,12 +173,15 @@ async def bot_stats(client, CallbackQuery, _):
         call["collections"],
         call["objects"],
     )
-    
+
     med = InputMediaPhoto(media=get_random_stats_img(), caption=text, has_spoiler=True)
-    
+
     try:
         await CallbackQuery.edit_message_media(media=med, reply_markup=upl)
     except MessageIdInvalid:
         await CallbackQuery.message.reply_photo(
-            photo=get_random_stats_img(), caption=text, reply_markup=upl, has_spoiler=True
+            photo=get_random_stats_img(),
+            caption=text,
+            reply_markup=upl,
+            has_spoiler=True,
         )

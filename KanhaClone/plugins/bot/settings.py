@@ -12,25 +12,41 @@ from time import time
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
-                            InlineKeyboardMarkup, Message)
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 import config
+from config import BANNED_USERS, OWNER_ID
 from KanhaClone import app
-from KanhaClone.utils.database import (add_nonadmin_chat, get_authuser,
-                                       get_authuser_names, get_playmode,
-                                       get_playtype, get_upvote_count,
-                                       is_nonadmin_chat, is_skipmode,
-                                       remove_nonadmin_chat, set_playmode,
-                                       set_playtype, set_upvotes, skip_off,
-                                       skip_on)
+from KanhaClone.utils.database import (
+    add_nonadmin_chat,
+    get_authuser,
+    get_authuser_names,
+    get_playmode,
+    get_playtype,
+    get_upvote_count,
+    is_nonadmin_chat,
+    is_skipmode,
+    remove_nonadmin_chat,
+    set_playmode,
+    set_playtype,
+    set_upvotes,
+    skip_off,
+    skip_on,
+)
 from KanhaClone.utils.decorators.admins import ActualAdminCB
 from KanhaClone.utils.decorators.language import language, languageCB
-from KanhaClone.utils.inline.settings import (auth_users_markup,
-                                              playmode_users_markup,
-                                              setting_markup, vote_mode_markup)
+from KanhaClone.utils.inline.settings import (
+    auth_users_markup,
+    playmode_users_markup,
+    setting_markup,
+    vote_mode_markup,
+)
 from KanhaClone.utils.inline.start import private_panel
-from config import BANNED_USERS, OWNER_ID
 
 
 @app.on_message(
@@ -80,7 +96,6 @@ async def show_bot_info(c: app, q: CallbackQuery):
 • ᴇᴠᴇʀʏᴛʜɪɴɢ ʟᴏᴏᴋs ɢᴏᴏᴅ!
 """
     await q.answer(txt, show_alert=True)
-    return
 
 
 @app.on_callback_query(filters.regex("Kanha_Anu") & ~BANNED_USERS)
@@ -90,28 +105,20 @@ async def support(client, CallbackQuery, _):
         _["ABOUT_1"].format(app.mention),
         reply_markup=InlineKeyboardMarkup(
             [
-                [          
-                    InlineKeyboardButton(
-                        text=" σᴡηєʀ ", user_id=config.OWNER_ID
-                    )
+                [InlineKeyboardButton(text=" σᴡηєʀ ", user_id=config.OWNER_ID)],
+                [
+                    InlineKeyboardButton(text="sυᴘᴘσʀᴛ", url=config.SUPPORT_CHAT),
+                    InlineKeyboardButton(text="υᴘᴅᴧᴛєs", url=config.SUPPORT_CHANNEL),
                 ],
                 [
                     InlineKeyboardButton(
-                        text="sυᴘᴘσʀᴛ", url=config.SUPPORT_CHAT
-                    ),
-                    InlineKeyboardButton(
-                        text="υᴘᴅᴧᴛєs", url=config.SUPPORT_CHANNEL
-                    ),
-
-                ],
-                [          
-                    InlineKeyboardButton(
-                        text="ʙᴧᴄᴋ", callback_data=f"settingsback_helper"
+                        text="ʙᴧᴄᴋ", callback_data="settingsback_helper"
                     )
                 ],
             ]
         ),
     )
+
 
 @app.on_callback_query(filters.regex("pikachu") & ~BANNED_USERS)
 @languageCB
@@ -139,13 +146,12 @@ async def supportuvh(client, CallbackQuery, _):
 
     buttons = InlineKeyboardMarkup(
         [
-            [
-                InlineKeyboardButton("« ʙᴧᴄᴋ", callback_data="settingsback_helper")
-            ],
+            [InlineKeyboardButton("« ʙᴧᴄᴋ", callback_data="settingsback_helper")],
         ]
     )
 
     await CallbackQuery.edit_message_text(text, reply_markup=buttons)
+
 
 @app.on_callback_query(filters.regex("settingsback_helper") & ~BANNED_USERS)
 @languageCB
@@ -273,8 +279,7 @@ async def addition(client, CallbackQuery, _):
                 _["setting_11"],
                 show_alert=True,
             )
-        if final <= 2:
-            final = 2
+        final = max(2, final)
         await set_upvotes(CallbackQuery.message.chat.id, final)
     else:
         final = current + 2
@@ -284,8 +289,7 @@ async def addition(client, CallbackQuery, _):
                 _["setting_12"],
                 show_alert=True,
             )
-        if final >= 15:
-            final = 15
+        final = min(15, final)
         await set_upvotes(CallbackQuery.message.chat.id, final)
     buttons = vote_mode_markup(_, final, True)
     try:

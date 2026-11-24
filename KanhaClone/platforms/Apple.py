@@ -8,7 +8,6 @@
 #
 
 import re
-from typing import Union
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -21,12 +20,9 @@ class AppleAPI:
         self.base = "https://music.apple.com/in/playlist/"
 
     async def valid(self, link: str):
-        if re.search(self.regex, link):
-            return True
-        else:
-            return False
+        return bool(re.search(self.regex, link))
 
-    async def track(self, url, playid: Union[bool, str] = None):
+    async def track(self, url, playid: bool | str | None = None):
         if playid:
             url = self.base + url
         async with aiohttp.ClientSession() as session:
@@ -57,7 +53,7 @@ class AppleAPI:
         }
         return track_details, vidid
 
-    async def playlist(self, url, playid: Union[bool, str] = None):
+    async def playlist(self, url, playid: bool | str | None = None):
         if playid:
             url = self.base + url
         playlist_id = url.split("playlist/")[1]

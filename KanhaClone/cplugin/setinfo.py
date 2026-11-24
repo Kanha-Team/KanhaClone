@@ -7,35 +7,43 @@
 # All rights reserved.
 #
 
-import asyncio
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from KanhaClone import app
-from KanhaClone.utils.decorators.language import language
-from KanhaClone.utils.database.clonedb import (
-    get_owner_id_from_db,
-    get_cloned_support_chat,
-    get_cloned_support_channel
-)
+
+from config import OWNER_ID, SUPPORT_CHAT
 from KanhaClone.utils.database import clonebotdb
-from config import SUPPORT_CHAT, OWNER_ID
-from KanhaClone.utils.database.clonedb import is_premium
+from KanhaClone.utils.database.clonedb import (
+    get_cloned_support_channel,
+    get_cloned_support_chat,
+    get_owner_id_from_db,
+    is_premium,
+)
+from KanhaClone.utils.decorators.language import language
+
 
 # --- Helper Function: Clean URL/Username ---
 def clean_url_or_username(value):
-    if "t.me/+" in value or "joinchat" in value or "https://" in value or "http://" in value:
+    if (
+        "t.me/+" in value
+        or "joinchat" in value
+        or "https://" in value
+        or "http://" in value
+    ):
         return value.strip()
-    
+
     value = value.replace("https://", "").replace("http://", "")
     value = value.replace("t.me/", "").replace("telegram.me/", "")
     value = value.replace("@", "")
     return value.strip("/")
+
 
 async def get_logging_status(bot_id):
     bot_data = await clonebotdb.find_one({"bot_id": bot_id})
     if not bot_data:
         return True
     return bot_data.get("logging", True)
+
 
 async def get_log_channel(bot_id):
     bot_data = await clonebotdb.find_one({"bot_id": bot_id})
@@ -45,6 +53,7 @@ async def get_log_channel(bot_id):
 
 
 # --- Commands ---
+
 
 @Client.on_message(filters.command("setchannel"))
 @language
@@ -59,19 +68,17 @@ async def set_channel(client: Client, message: Message, _):
 
     if message.from_user.id not in OWNERS:
         return await message.reply_text(_["NOT_C_OWNER"].format(SUPPORT_CHAT))
-    
+
     if len(message.command) != 2:
         return await message.reply_text(_["C_P_I_2"])
-    
+
     raw_input = message.command[1]
     final_value = clean_url_or_username(raw_input)
 
     result = await clonebotdb.update_one(
-        {"bot_id": bot_id},
-        {"$set": {"channel": final_value}},
-        upsert=True
+        {"bot_id": bot_id}, {"$set": {"channel": final_value}}, upsert=True
     )
-    
+
     if result.modified_count > 0 or result.upserted_id:
         await message.reply_text(_["C_P_I_4"].format(final_value))
     else:
@@ -91,7 +98,7 @@ async def set_support(client: Client, message: Message, _):
 
     if message.from_user.id not in OWNERS:
         return await message.reply_text(_["NOT_C_OWNER"].format(SUPPORT_CHAT))
-    
+
     if len(message.command) != 2:
         return await message.reply_text(_["C_P_I_1"])
 
@@ -99,11 +106,9 @@ async def set_support(client: Client, message: Message, _):
     final_value = clean_url_or_username(raw_input)
 
     result = await clonebotdb.update_one(
-        {"bot_id": bot_id},
-        {"$set": {"support": final_value}},
-        upsert=True
+        {"bot_id": bot_id}, {"$set": {"support": final_value}}, upsert=True
     )
-    
+
     if result.modified_count > 0 or result.upserted_id:
         await message.reply_text(_["C_P_I_3"].format(final_value))
     else:
@@ -125,7 +130,7 @@ async def bot_info(client: Client, message: Message, _):
     # Async calls to fetch data
     channel = await get_cloned_support_channel(bot_id)
     support = await get_cloned_support_chat(bot_id)
-    
+
     await message.reply_text(
         f"**ʙᴏᴛ ɪɴғᴏ:**\n"
         f"➤ **ʙᴏᴛ ɪᴅ:** `{bot_id}`\n"
@@ -146,7 +151,7 @@ async def check_log_status(client: Client, message: Message, _):
 
     logging_status = await get_logging_status(bot_id)
     log_channel = await get_log_channel(bot_id)
-    
+
     C_LOGGER_STATUS = "Enabled" if logging_status else "Disabled"
     C_LOGGER_VALUE = log_channel if str(log_channel) != "-100" else "Not Set"
 
@@ -167,15 +172,16 @@ async def toggle_logging(client: Client, message: Message, _):
     if message.from_user.id not in OWNERS:
         return await message.reply_text(_["NOT_C_OWNER"].format(SUPPORT_CHAT))
 
-    if len(message.command) != 2 or message.command[1].lower() not in ["enable", "disable"]:
+    if len(message.command) != 2 or message.command[1].lower() not in [
+        "enable",
+        "disable",
+    ]:
         return await message.reply_text("**ᴇxᴀᴍᴘʟᴇ :** \n/logger [ᴇɴᴀʙʟᴇ | ᴅɪsᴀʙʟᴇ]")
 
     logging_status = message.command[1].lower() == "enable"
-    
+
     await clonebotdb.update_one(
-        {"bot_id": bot_id},
-        {"$set": {"logging": logging_status}},
-        upsert=True
+        {"bot_id": bot_id}, {"$set": {"logging": logging_status}}, upsert=True
     )
     await message.reply_text(f"{'ᴇɴᴀʙʟᴇᴅ' if logging_status else 'ᴅɪsᴀʙʟᴇᴅ'} ʟᴏɢɢɪɴɢ.")
 
@@ -207,10 +213,8 @@ async def set_log_channel(client: Client, message: Message, _):
     try:
         await client.send_message(group_id, "ʙᴏᴛ ʟᴏɢɢɪɴɢ ᴇɴᴀʙʟᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!")
         await clonebotdb.update_one(
-            {"bot_id": bot_id},
-            {"$set": {"logchannel": group_id}},
-            upsert=True
+            {"bot_id": bot_id}, {"$set": {"logchannel": group_id}}, upsert=True
         )
         return await message.reply_text(f"ʟᴏɢɢɪɴɢ ᴇɴᴀʙʟᴇᴅ ғᴏʀ `{group_id}`.")
     except Exception:
-        return await message.reply_text(f"ʙᴏᴛ ᴄᴀɴ'ᴛ sᴇɴᴅ ᴍᴇssᴀɢᴇs ɪɴ ᴛʜɪs ɢʀᴏᴜᴘ!")
+        return await message.reply_text("ʙᴏᴛ ᴄᴀɴ'ᴛ sᴇɴᴅ ᴍᴇssᴀɢᴇs ɪɴ ᴛʜɪs ɢʀᴏᴜᴘ!")

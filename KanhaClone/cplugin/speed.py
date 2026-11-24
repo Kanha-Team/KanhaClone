@@ -7,19 +7,19 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
+from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from KanhaClone import app
+from config import BANNED_USERS, adminlist
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import SUDOERS, db
-from KanhaClone.utils.decorators import AdminRightsCheck
 from KanhaClone.utils.database import is_active_chat, is_nonadmin_chat
+from KanhaClone.utils.decorators import AdminRightsCheck
 from KanhaClone.utils.decorators.language import languageCB
 from KanhaClone.utils.inline import close_markup, speed_markup
-from config import BANNED_USERS, adminlist
 
 checker = []
+
 
 @Client.on_message(
     filters.command(["cspeed", "speed", "cslow", "slow", "playback", "cplayback"])
@@ -45,6 +45,7 @@ async def playback(client, message: Message, _, chat_id):
         reply_markup=upl,
     )
 
+
 # Zeo
 @Client.on_callback_query(filters.regex("SpeedUP") & ~BANNED_USERS)
 @languageCB
@@ -56,14 +57,13 @@ async def speed_play_callback(client, callback_query, _):
     if not await is_active_chat(chat_id):
         return await callback_query.answer(_["general_5"], show_alert=True)
     is_non_admin = await is_nonadmin_chat(callback_query.message.chat.id)
-    if not is_non_admin:
-        if callback_query.from_user.id not in SUDOERS:
-            admins = adminlist.get(callback_query.message.chat.id)
-            if not admins:
-                return await callback_query.answer(_["admin_13"], show_alert=True)
-            else:
-                if callback_query.from_user.id not in admins:
-                    return await callback_query.answer(_["admin_14"], show_alert=True)
+    if not is_non_admin and callback_query.from_user.id not in SUDOERS:
+        admins = adminlist.get(callback_query.message.chat.id)
+        if not admins:
+            return await callback_query.answer(_["admin_13"], show_alert=True)
+        else:
+            if callback_query.from_user.id not in admins:
+                return await callback_query.answer(_["admin_14"], show_alert=True)
     playing = db.get(chat_id)
     if not playing:
         return await callback_query.answer(_["queue_2"], show_alert=True)
@@ -75,11 +75,10 @@ async def speed_play_callback(client, callback_query, _):
         return await callback_query.answer(_["admin_27"], show_alert=True)
     checkspeed = playing[0].get("speed")
     if checkspeed:
-        if str(checkspeed) == str(speed):
-            if str(speed) == str("1.0"):
-                return await callback_query.answer(_["admin_29"], show_alert=True)
+        if str(checkspeed) == str(speed) and str(speed) == "1.0":
+            return await callback_query.answer(_["admin_29"], show_alert=True)
     else:
-        if str(speed) == str("1.0"):
+        if str(speed) == "1.0":
             return await callback_query.answer(_["admin_29"], show_alert=True)
     if chat_id in checker:
         return await callback_query.answer(_["admin_30"], show_alert=True)
@@ -89,7 +88,7 @@ async def speed_play_callback(client, callback_query, _):
         await callback_query.answer(_["admin_31"])
     except:
         pass
-    mystic = await client.send_message(
+    await client.send_message(
         callback_query.message.chat.id,
         text=_["admin_32"].format(callback_query.from_user.mention),
     )

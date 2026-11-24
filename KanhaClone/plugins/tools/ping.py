@@ -12,15 +12,17 @@ from datetime import datetime
 
 from pyrogram import filters
 from pyrogram.types import Message
+
 from config import *
+from config import BANNED_USERS, PING_IMG_URL
 from KanhaClone import app
 from KanhaClone.core.call import Kanha
 from KanhaClone.utils import bot_sys_stats
 from KanhaClone.utils.decorators.language import language
 from KanhaClone.utils.inline import supp_markup
-from config import BANNED_USERS, PING_IMG_URL
 
 FALLBACK_IMG = "https://telegra.ph/file/2e3d368e77c449c287430.jpg"
+
 
 def _pick_img(img):
     """Return a single valid URL string from str or list."""
@@ -28,11 +30,18 @@ def _pick_img(img):
         return FALLBACK_IMG
     if isinstance(img, list):
         chosen = random.choice(img)
-        return chosen if isinstance(chosen, str) and chosen.startswith("http") else FALLBACK_IMG
+        return (
+            chosen
+            if isinstance(chosen, str) and chosen.startswith("http")
+            else FALLBACK_IMG
+        )
     return img if isinstance(img, str) else FALLBACK_IMG
 
 
-@app.on_message(filters.command("ping", prefixes=["/", "!", "%", ",", "", ".", "@", "#"]) & ~BANNED_USERS)
+@app.on_message(
+    filters.command("ping", prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    & ~BANNED_USERS
+)
 @language
 async def ping_com(client, message: Message, _):
     start = datetime.now()

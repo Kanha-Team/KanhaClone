@@ -10,11 +10,11 @@
 from pyrogram import filters
 from pyrogram.types import Message
 
+from config import BANNED_USERS
 from KanhaClone import app
 from KanhaClone.utils.database import get_loop, set_loop
 from KanhaClone.utils.decorators import AdminRightsCheck
 from KanhaClone.utils.inline import close_markup
-from config import BANNED_USERS
 
 
 @app.on_message(filters.command(["loop", "cloop"]) & filters.group & ~BANNED_USERS)

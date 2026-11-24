@@ -8,16 +8,17 @@
 #
 
 import math
-from pyrogram.types import InlineKeyboardButton
-from KanhaClone.utils.formatters import time_to_seconds
-import config
-
-
 import random
+
+from pyrogram.types import InlineKeyboardButton
+
+from KanhaClone.utils.formatters import time_to_seconds
+
 
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -49,21 +50,32 @@ def track_markup(_, videoid, user_id, channel, fplay):
     ]
     return buttons
 
+
 def stream_markup_timer(_, chat_id, played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
-    if 0 < umm <= 10: bar = "◉—————————"
-    elif 10 < umm < 20: bar = "—◉————————"
-    elif 20 <= umm < 30: bar = "——◉———————"
-    elif 30 <= umm < 40: bar = "———◉——————"
-    elif 40 <= umm < 50: bar = "————◉—————"
-    elif 50 <= umm < 60: bar = "—————◉————"
-    elif 60 <= umm < 70: bar = "——————◉———"
-    elif 70 <= umm < 80: bar = "———————◉——"
-    elif 80 <= umm < 95: bar = "————————◉—"
-    else: bar = "—————————◉"
+    if 0 < umm <= 10:
+        bar = "◉—————————"
+    elif 10 < umm < 20:
+        bar = "—◉————————"
+    elif 20 <= umm < 30:
+        bar = "——◉———————"
+    elif 30 <= umm < 40:
+        bar = "———◉——————"
+    elif 40 <= umm < 50:
+        bar = "————◉—————"
+    elif 50 <= umm < 60:
+        bar = "—————◉————"
+    elif 60 <= umm < 70:
+        bar = "——————◉———"
+    elif 70 <= umm < 80:
+        bar = "———————◉——"
+    elif 80 <= umm < 95:
+        bar = "————————◉—"
+    else:
+        bar = "—————————◉"
     buttons = [
         [btn(text=f"{played} {bar} {dur}", callback_data="GetTimer")],
         [
@@ -73,9 +85,10 @@ def stream_markup_timer(_, chat_id, played, dur):
             btn(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             btn(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
-        [btn(text=_["CLOSE_BUTTON"], callback_data="close")]
+        [btn(text=_["CLOSE_BUTTON"], callback_data="close")],
     ]
     return buttons
+
 
 def stream_markup(_, chat_id):
     buttons = [
@@ -86,41 +99,68 @@ def stream_markup(_, chat_id):
             btn(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             btn(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
-        [btn(text=_["CLOSE_BUTTON"], callback_data="close")]
+        [btn(text=_["CLOSE_BUTTON"], callback_data="close")],
     ]
     return buttons
+
 
 def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
     buttons = [
         [
-            btn(text=_["P_B_1"], callback_data=f"KanhaPlaylists {videoid}|{user_id}|{ptype}|a|{channel}|{fplay}"),
-            btn(text=_["P_B_2"], callback_data=f"KanhaPlaylists {videoid}|{user_id}|{ptype}|v|{channel}|{fplay}"),
+            btn(
+                text=_["P_B_1"],
+                callback_data=f"KanhaPlaylists {videoid}|{user_id}|{ptype}|a|{channel}|{fplay}",
+            ),
+            btn(
+                text=_["P_B_2"],
+                callback_data=f"KanhaPlaylists {videoid}|{user_id}|{ptype}|v|{channel}|{fplay}",
+            ),
         ],
         [btn(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}")],
     ]
     return buttons
 
+
 def livestream_markup(_, videoid, user_id, mode, channel, fplay):
     buttons = [
-        [btn(text=_["P_B_3"], callback_data=f"LiveStream {videoid}|{user_id}|{mode}|{channel}|{fplay}")],
+        [
+            btn(
+                text=_["P_B_3"],
+                callback_data=f"LiveStream {videoid}|{user_id}|{mode}|{channel}|{fplay}",
+            )
+        ],
         [btn(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}")],
     ]
     return buttons
+
 
 def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
     query = f"{query[:20]}"
     buttons = [
         [
-            btn(text=_["P_B_1"], callback_data=f"MusicStream {videoid}|{user_id}|a|{channel}|{fplay}"),
-            btn(text=_["P_B_2"], callback_data=f"MusicStream {videoid}|{user_id}|v|{channel}|{fplay}"),
+            btn(
+                text=_["P_B_1"],
+                callback_data=f"MusicStream {videoid}|{user_id}|a|{channel}|{fplay}",
+            ),
+            btn(
+                text=_["P_B_2"],
+                callback_data=f"MusicStream {videoid}|{user_id}|v|{channel}|{fplay}",
+            ),
         ],
         [
-            btn(text="◁", callback_data=f"slider B|{query_type}|{query}|{user_id}|{channel}|{fplay}"),
+            btn(
+                text="◁",
+                callback_data=f"slider B|{query_type}|{query}|{user_id}|{channel}|{fplay}",
+            ),
             btn(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {query}|{user_id}"),
-            btn(text="▷", callback_data=f"slider F|{query_type}|{query}|{user_id}|{channel}|{fplay}"),
+            btn(
+                text="▷",
+                callback_data=f"slider F|{query_type}|{query}|{user_id}|{channel}|{fplay}",
+            ),
         ],
     ]
     return buttons
+
 
 def telegram_markup(_, chat_id):
     buttons = [
@@ -130,6 +170,7 @@ def telegram_markup(_, chat_id):
         ],
     ]
     return buttons
+
 
 def queue_markup(_, videoid, chat_id, bot_username):
     buttons = [
@@ -147,6 +188,7 @@ def queue_markup(_, videoid, chat_id, bot_username):
     ]
     return buttons
 
+
 def stream_markup2(_, chat_id, bot_username):
     buttons = [
         [btn(text=_["S_B_3"], url=f"https://t.me/{bot_username}?startgroup=true")],
@@ -161,19 +203,28 @@ def stream_markup2(_, chat_id, bot_username):
     ]
     return buttons
 
+
 def stream_markup_timer2(_, chat_id, played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
-    if 0 < umm <= 40: bar = "◉——————————"
-    elif 10 < umm < 20: bar = "—◉—————————"
-    elif 20 < umm < 30: bar = "——◉————————"
-    elif 30 <= umm < 40: bar = "———◉———————"
-    elif 40 <= umm < 50: bar = "————◉——————"
-    elif 50 <= umm < 60: bar = "——————◉————"
-    elif 50 <= umm < 70: bar = "———————◉———"
-    else: bar = "——————————◉"
+    if 0 < umm <= 40:
+        bar = "◉——————————"
+    elif 10 < umm < 20:
+        bar = "—◉—————————"
+    elif 20 < umm < 30:
+        bar = "——◉————————"
+    elif 30 <= umm < 40:
+        bar = "———◉———————"
+    elif 40 <= umm < 50:
+        bar = "————◉——————"
+    elif 50 <= umm < 60:
+        bar = "——————◉————"
+    elif 50 <= umm < 70:
+        bar = "———————◉———"
+    else:
+        bar = "——————————◉"
     buttons = [
         [btn(text=f"{played} {bar} {dur}", callback_data="GetTimer")],
         [
@@ -186,6 +237,7 @@ def stream_markup_timer2(_, chat_id, played, dur):
         [btn(text=_["CLOSEMENU_BUTTON"], callback_data="close")],
     ]
     return buttons
+
 
 def panel_markup_1(_, videoid, chat_id, bot_username):
     buttons = [
@@ -205,6 +257,7 @@ def panel_markup_1(_, videoid, chat_id, bot_username):
     ]
     return buttons
 
+
 def panel_markup_2(_, videoid, chat_id, bot_username):
     buttons = [
         [btn(text=_["S_B_3"], url=f"https://t.me/{bot_username}?startgroup=true")],
@@ -221,6 +274,7 @@ def panel_markup_2(_, videoid, chat_id, bot_username):
     ]
     return buttons
 
+
 def panel_markup_3(_, videoid, chat_id):
     buttons = [
         [
@@ -236,19 +290,28 @@ def panel_markup_3(_, videoid, chat_id):
     ]
     return buttons
 
+
 def panel_markup_4(_, vidid, chat_id, played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
-    if 0 < umm <= 40: bar = "◉——————————"
-    elif 10 < umm < 20: bar = "—◉—————————"
-    elif 20 < umm < 30: bar = "——◉————————"
-    elif 30 <= umm < 40: bar = "———◉———————"
-    elif 40 <= umm < 50: bar = "————◉——————"
-    elif 50 <= umm < 60: bar = "——————◉————"
-    elif 50 <= umm < 70: bar = "———————◉———"
-    else: bar = "——————————◉"
+    if 0 < umm <= 40:
+        bar = "◉——————————"
+    elif 10 < umm < 20:
+        bar = "—◉—————————"
+    elif 20 < umm < 30:
+        bar = "——◉————————"
+    elif 30 <= umm < 40:
+        bar = "———◉———————"
+    elif 40 <= umm < 50:
+        bar = "————◉——————"
+    elif 50 <= umm < 60:
+        bar = "——————◉————"
+    elif 50 <= umm < 70:
+        bar = "———————◉———"
+    else:
+        bar = "——————————◉"
     buttons = [
         [btn(text=f"{played} {bar} {dur}", callback_data="GetTimer")],
         [
@@ -263,6 +326,7 @@ def panel_markup_4(_, vidid, chat_id, played, dur):
         [btn(text="ʜᴏᴍᴇ", callback_data=f"MainMarkup {vidid}|{chat_id}")],
     ]
     return buttons
+
 
 def panel_markup_5(_, videoid, chat_id, bot_username):
     buttons = [
@@ -283,6 +347,7 @@ def panel_markup_5(_, videoid, chat_id, bot_username):
     ]
     return buttons
 
+
 def panel_markup_clone(_, vidid, chat_id):
     buttons = [
         [
@@ -291,7 +356,6 @@ def panel_markup_clone(_, vidid, chat_id):
             btn(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             btn(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
-        [btn(text=_["CLOSE_BUTTON"], callback_data="close")]
+        [btn(text=_["CLOSE_BUTTON"], callback_data="close")],
     ]
     return buttons
-

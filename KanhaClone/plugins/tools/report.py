@@ -8,13 +8,15 @@
 #
 
 import asyncio
+
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.raw import functions, types
+from pyrogram.types import Message
+
+from config import API_HASH, API_ID
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS
 from KanhaClone.utils.database import clonebotdb
-from config import API_ID, API_HASH
 
 REASONS = {
     "spam": types.InputReportReasonSpam(),
@@ -24,6 +26,7 @@ REASONS = {
     "child": types.InputReportReasonChildAbuse(),
     "other": types.InputReportReasonOther(),
 }
+
 
 @app.on_message(filters.command(["greport", "massreport"]) & SUDOERS)
 async def global_report(client: Client, message: Message):
@@ -54,15 +57,20 @@ async def global_report(client: Client, message: Message):
 
     async def report_worker(session, wid):
         try:
-            cli = Client(f"r_{wid}", api_id=API_ID, api_hash=API_HASH, session_string=session, no_updates=True, in_memory=True)
+            cli = Client(
+                f"r_{wid}",
+                api_id=API_ID,
+                api_hash=API_HASH,
+                session_string=session,
+                no_updates=True,
+                in_memory=True,
+            )
             await cli.start()
             try:
                 peer = await cli.resolve_peer(target)
                 await cli.invoke(
                     functions.account.ReportPeer(
-                        peer=peer,
-                        reason=reason,
-                        message=f"Mass Report: {reason_txt}"
+                        peer=peer, reason=reason, message=f"Mass Report: {reason_txt}"
                     )
                 )
                 await cli.stop()
@@ -75,7 +83,7 @@ async def global_report(client: Client, message: Message):
 
     tasks = [report_worker(sessions[i], i) for i in range(len(sessions))]
     results = await asyncio.gather(*tasks)
-    
+
     success = results.count(True)
     await message.reply_text(
         f"🏁 **Report Completed!**\n\n"

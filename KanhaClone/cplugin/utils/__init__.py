@@ -8,8 +8,9 @@
 #
 
 import time
-from .queue import *
+
 from .inline import *
+from .queue import *
 from .watcher import *
 
 StartTime = time.time()

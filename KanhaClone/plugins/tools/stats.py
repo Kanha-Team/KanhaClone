@@ -7,8 +7,8 @@
 # All rights reserved.
 #
 
-import random
 import platform
+import random
 from sys import version as pyver
 
 import psutil
@@ -19,6 +19,7 @@ from pyrogram.types import InputMediaPhoto, Message
 from pytgcalls.__version__ import __version__ as pytgver
 
 import config
+from config import BANNED_USERS
 from KanhaClone import app
 from KanhaClone.core.userbot import assistants
 from KanhaClone.misc import SUDOERS, mongodb
@@ -26,7 +27,7 @@ from KanhaClone.plugins import ALL_MODULES
 from KanhaClone.utils.database import get_served_chats, get_served_users, get_sudoers
 from KanhaClone.utils.decorators.language import language, languageCB
 from KanhaClone.utils.inline.stats import back_stats_buttons, stats_buttons
-from config import BANNED_USERS
+
 
 def _pick_img(img):
     if not img:
@@ -36,12 +37,10 @@ def _pick_img(img):
     return img
 
 
-
-
 @app.on_message(filters.command(["stats", "gstats"]) & filters.group & ~BANNED_USERS)
 @language
 async def stats_global(client, message: Message, _):
-    upl = stats_buttons(_, True if message.from_user.id in SUDOERS else False)
+    upl = stats_buttons(_, message.from_user.id in SUDOERS)
     await message.reply_photo(
         photo=_pick_img(config.STATS_IMG_URL),
         caption=_["gstats_2"].format(app.mention),
@@ -52,7 +51,7 @@ async def stats_global(client, message: Message, _):
 @app.on_callback_query(filters.regex("stats_back") & ~BANNED_USERS)
 @languageCB
 async def home_stats(client, CallbackQuery, _):
-    upl = stats_buttons(_, True if CallbackQuery.from_user.id in SUDOERS else False)
+    upl = stats_buttons(_, CallbackQuery.from_user.id in SUDOERS)
     await CallbackQuery.edit_message_text(
         text=_["gstats_2"].format(app.mention),
         reply_markup=upl,

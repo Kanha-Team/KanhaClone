@@ -10,12 +10,12 @@
 from pyrogram import filters
 from pyrogram.types import Message
 
+from config import BANNED_USERS
 from KanhaClone import YouTube, app
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import db
 from KanhaClone.utils import AdminRightsCheck, seconds_to_min
 from KanhaClone.utils.inline import close_markup
-from config import BANNED_USERS
 
 
 @app.on_message(

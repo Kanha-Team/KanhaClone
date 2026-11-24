@@ -8,10 +8,12 @@
 #
 
 import random
+
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, Message
 
 import config
+from config import BANNED_USERS
 from KanhaClone import YouTube, app
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import db
@@ -20,7 +22,6 @@ from KanhaClone.utils.decorators import AdminRightsCheck
 from KanhaClone.utils.inline import close_markup, stream_markup, stream_markup2
 from KanhaClone.utils.stream.autoclear import auto_clean
 from KanhaClone.utils.thumbnails import get_thumb
-from config import BANNED_USERS
 
 
 def get_random_img(img_list):
@@ -69,12 +70,10 @@ async def skip(cli, message: Message, _, chat_id):
                 if count > 2:
                     count = int(count - 1)
                     if 1 <= state <= count:
-                        last_popped = None
                         for x in range(state):
                             popped = None
                             try:
                                 popped = check.pop(0)
-                                last_popped = popped
                             except:
                                 return await message.reply_text(_["admin_12"])
                             if popped:
@@ -143,12 +142,11 @@ async def skip(cli, message: Message, _, chat_id):
     if db.get(chat_id) and db[chat_id]:
         db[chat_id][0]["played"] = 0
     exis = (check[0]).get("old_dur")
-    if exis:
-        if db.get(chat_id) and db[chat_id]:
-            db[chat_id][0]["dur"] = exis
-            db[chat_id][0]["seconds"] = check[0]["old_second"]
-            db[chat_id][0]["speed_path"] = None
-            db[chat_id][0]["speed"] = 1.0
+    if exis and db.get(chat_id) and db[chat_id]:
+        db[chat_id][0]["dur"] = exis
+        db[chat_id][0]["seconds"] = check[0]["old_second"]
+        db[chat_id][0]["speed_path"] = None
+        db[chat_id][0]["speed"] = 1.0
 
     if "live_" in queued:
         n, link = await YouTube.video(videoid, True)
@@ -183,7 +181,7 @@ async def skip(cli, message: Message, _, chat_id):
     elif "vid_" in queued:
         mystic = await message.reply_text(_["call_7"], disable_web_page_preview=True)
         try:
-            file_path, direct = await YouTube.download(
+            file_path, _direct = await YouTube.download(
                 videoid,
                 mystic,
                 videoid=True,
@@ -234,9 +232,7 @@ async def skip(cli, message: Message, _, chat_id):
         _safe_db_set(chat_id, "markup", "tg")
 
     else:
-        if videoid == "telegram":
-            image = None
-        elif videoid == "soundcloud":
+        if videoid == "telegram" or videoid == "soundcloud":
             image = None
         else:
             try:
@@ -250,11 +246,17 @@ async def skip(cli, message: Message, _, chat_id):
 
         if videoid == "telegram":
             button = stream_markup2(_, chat_id)
-            tg_img = get_random_img(config.TELEGRAM_AUDIO_URL) if str(streamtype) == "audio" else get_random_img(config.TELEGRAM_VIDEO_URL)
+            tg_img = (
+                get_random_img(config.TELEGRAM_AUDIO_URL)
+                if str(streamtype) == "audio"
+                else get_random_img(config.TELEGRAM_VIDEO_URL)
+            )
             run = await _reply_photo_safe(
                 message,
                 tg_img,
-                _["stream_1"].format(config.SUPPORT_CHAT, title[:23], check[0]["dur"], user),
+                _["stream_1"].format(
+                    config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                ),
                 InlineKeyboardMarkup(button),
             )
             _safe_db_set(chat_id, "mystic", run)
@@ -262,11 +264,17 @@ async def skip(cli, message: Message, _, chat_id):
 
         elif videoid == "soundcloud":
             button = stream_markup2(_, chat_id)
-            sc_img = get_random_img(config.SOUNCLOUD_IMG_URL) if str(streamtype) == "audio" else get_random_img(config.TELEGRAM_VIDEO_URL)
+            sc_img = (
+                get_random_img(config.SOUNCLOUD_IMG_URL)
+                if str(streamtype) == "audio"
+                else get_random_img(config.TELEGRAM_VIDEO_URL)
+            )
             run = await _reply_photo_safe(
                 message,
                 sc_img,
-                _["stream_1"].format(config.SUPPORT_CHAT, title[:23], check[0]["dur"], user),
+                _["stream_1"].format(
+                    config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                ),
                 InlineKeyboardMarkup(button),
             )
             _safe_db_set(chat_id, "mystic", run)

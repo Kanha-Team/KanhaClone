@@ -7,8 +7,8 @@
 # All rights reserved.
 #
 
-import random
 import asyncio
+import random
 
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import (
@@ -16,10 +16,10 @@ from pyrogram.errors import (
     InviteRequestSent,
     UserAlreadyParticipant,
     UserNotParticipant,
-    PeerIdInvalid
 )
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from config import PLAYLIST_IMG_URL, SUPPORT_CHAT, adminlist
 from KanhaClone import YouTube, app
 from KanhaClone.misc import SUDOERS
 from KanhaClone.utils.database import (
@@ -32,7 +32,6 @@ from KanhaClone.utils.database import (
     is_maintenance,
 )
 from KanhaClone.utils.inline import botplaylist_markup
-from config import PLAYLIST_IMG_URL, SUPPORT_CHAT, adminlist
 from strings import get_string
 
 links = {}
@@ -40,15 +39,18 @@ clinks = {}
 
 FALLBACK_IMG = "https://telegra.ph/file/2e3d368e77c449c287430.jpg"
 
+
 def _pick_img(img):
     if not img:
         return FALLBACK_IMG
     if isinstance(img, list):
         chosen = random.choice(img)
-        return chosen if isinstance(chosen, str) and chosen.startswith("http") else FALLBACK_IMG
+        return (
+            chosen
+            if isinstance(chosen, str) and chosen.startswith("http")
+            else FALLBACK_IMG
+        )
     return img if isinstance(img, str) and img.startswith("http") else FALLBACK_IMG
-
-
 
 
 def PlayWrapper(command):
@@ -103,7 +105,9 @@ def PlayWrapper(command):
                         reply_markup=InlineKeyboardMarkup(buttons),
                     )
                 except Exception:
-                    return await message.reply_text(_["play_18"], reply_markup=InlineKeyboardMarkup(buttons))
+                    return await message.reply_text(
+                        _["play_18"], reply_markup=InlineKeyboardMarkup(buttons)
+                    )
         if message.command[0][0] == "c":
             chat_id = await get_cmode(message.chat.id)
             if chat_id is None:
@@ -118,14 +122,13 @@ def PlayWrapper(command):
             channel = None
         playmode = await get_playmode(message.chat.id)
         playty = await get_playtype(message.chat.id)
-        if playty != "Everyone":
-            if message.from_user.id not in SUDOERS:
-                admins = adminlist.get(message.chat.id)
-                if not admins:
-                    return await message.reply_text(_["admin_13"])
-                else:
-                    if message.from_user.id not in admins:
-                        return await message.reply_text(_["play_4"])
+        if playty != "Everyone" and message.from_user.id not in SUDOERS:
+            admins = adminlist.get(message.chat.id)
+            if not admins:
+                return await message.reply_text(_["admin_13"])
+            else:
+                if message.from_user.id not in admins:
+                    return await message.reply_text(_["play_4"])
         if message.command[0][0] == "v":
             video = True
         else:
@@ -149,7 +152,17 @@ def PlayWrapper(command):
                     return await message.reply_text(
                         _["call_2"].format(
                             app.mention, userbot.id, userbot.name, userbot.username
-                        ), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text= "๏ 𝗨ɴʙᴀɴ 𝗔ssɪsᴛᴀɴᴛ ๏", callback_data=f"unban_assistant")]])
+                        ),
+                        reply_markup=InlineKeyboardMarkup(
+                            [
+                                [
+                                    InlineKeyboardButton(
+                                        text="๏ 𝗨ɴʙᴀɴ 𝗔ssɪsᴛᴀɴᴛ ๏",
+                                        callback_data="unban_assistant",
+                                    )
+                                ]
+                            ]
+                        ),
                     )
             except UserNotParticipant:
                 if chat_id in links:
@@ -216,6 +229,7 @@ def PlayWrapper(command):
 
     return wrapper
 
+
 def CPlayWrapper(command):
     async def wrapper(client, message):
         i = await client.get_me()
@@ -269,7 +283,9 @@ def CPlayWrapper(command):
                         reply_markup=InlineKeyboardMarkup(buttons),
                     )
                 except Exception:
-                    return await message.reply_text(_["play_18"], reply_markup=InlineKeyboardMarkup(buttons))
+                    return await message.reply_text(
+                        _["play_18"], reply_markup=InlineKeyboardMarkup(buttons)
+                    )
         if message.command[0][0] == "c":
             chat_id = await get_cmode(message.chat.id)
             if chat_id is None:
@@ -284,14 +300,13 @@ def CPlayWrapper(command):
             channel = None
         playmode = await get_playmode(message.chat.id)
         playty = await get_playtype(message.chat.id)
-        if playty != "Everyone":
-            if message.from_user.id not in SUDOERS:
-                admins = adminlist.get(message.chat.id)
-                if not admins:
-                    return await message.reply_text(_["admin_13"])
-                else:
-                    if message.from_user.id not in admins:
-                        return await message.reply_text(_["play_4"])
+        if playty != "Everyone" and message.from_user.id not in SUDOERS:
+            admins = adminlist.get(message.chat.id)
+            if not admins:
+                return await message.reply_text(_["admin_13"])
+            else:
+                if message.from_user.id not in admins:
+                    return await message.reply_text(_["play_4"])
         if message.command[0][0] == "v":
             video = True
         else:
@@ -306,7 +321,7 @@ def CPlayWrapper(command):
                 userbot = client.assistant
             else:
                 userbot = await get_assistant(chat_id)
-            
+
             if hasattr(userbot, "me"):
                 ub_id = userbot.me.id
                 ub_username = userbot.me.username
@@ -328,9 +343,7 @@ def CPlayWrapper(command):
                     or get.status == ChatMemberStatus.RESTRICTED
                 ):
                     return await message.reply_text(
-                        _["call_2"].format(
-                            i.mention, ub_id, ub_name, ub_username
-                        )
+                        _["call_2"].format(i.mention, ub_id, ub_name, ub_username)
                     )
             except UserNotParticipant:
                 if chat_id in clinks:

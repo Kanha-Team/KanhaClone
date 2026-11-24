@@ -10,9 +10,12 @@
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from config import SUPPORT_CHAT, adminlist, confirmer
 from KanhaClone import app
+from KanhaClone.cplugin.utils.formatters import int_to_alpha
 from KanhaClone.misc import SUDOERS, db
 from KanhaClone.utils.database import (
+    clonebotdb,
     get_authuser_names,
     get_cmode,
     get_lang,
@@ -21,12 +24,9 @@ from KanhaClone.utils.database import (
     is_maintenance,
     is_nonadmin_chat,
     is_skipmode,
-    clonebotdb,
 )
-from config import SUPPORT_CHAT, adminlist, confirmer
 from strings import get_string
 
-from KanhaClone.cplugin.utils.formatters import int_to_alpha
 
 # --- HELPER: Clone Admin Checker ---
 async def is_clone_admin(bot_id, user_id):
@@ -101,9 +101,9 @@ def AdminRightsCheck(mystic):
         # 5. Permission Check Logic
         is_non_admin = await is_nonadmin_chat(message.chat.id)
         if not is_non_admin:
-            
+
             is_clone_auth = await is_clone_admin(client.me.id, message.from_user.id)
-            
+
             if message.from_user.id not in SUDOERS and not is_clone_auth:
                 admins = adminlist.get(message.chat.id)
                 if not admins:
@@ -233,8 +233,10 @@ def ActualAdminCB(mystic):
                 ).privileges
             except:
                 return await CallbackQuery.answer(_["general_4"], show_alert=True)
-            
-            is_clone_auth = await is_clone_admin(client.me.id, CallbackQuery.from_user.id)
+
+            is_clone_auth = await is_clone_admin(
+                client.me.id, CallbackQuery.from_user.id
+            )
 
             if not a.can_manage_video_chats and not is_clone_auth:
                 if CallbackQuery.from_user.id not in SUDOERS:

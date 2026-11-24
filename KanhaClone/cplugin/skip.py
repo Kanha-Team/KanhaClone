@@ -9,20 +9,23 @@
 
 
 import random
-from pyrogram import filters, Client
+
+from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, Message
 
 import config
-from KanhaClone import YouTube, app
+from config import BANNED_USERS
+from KanhaClone import YouTube
 from KanhaClone.core.call import Kanha
+from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
 from KanhaClone.misc import db
 from KanhaClone.utils.database import get_loop
-from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
+from KanhaClone.utils.database.clonedb import (
+    get_cloned_support_chat,
+)
 from KanhaClone.utils.inline import close_markup, stream_markup, stream_markup2
 from KanhaClone.utils.stream.autoclear import auto_clean
 from KanhaClone.utils.thumbnails import get_thumb
-from config import BANNED_USERS
-from KanhaClone.utils.database.clonedb import get_owner_id_from_db, get_cloned_support_chat, get_cloned_support_channel
 
 
 @Client.on_message(
@@ -52,12 +55,10 @@ async def skip(cli, message: Message, _, chat_id):
                 if count > 2:
                     count = int(count - 1)
                     if 1 <= state <= count:
-                        last_popped = None
                         for x in range(state):
                             popped = None
                             try:
                                 popped = check.pop(0)
-                                last_popped = popped
                             except:
                                 return await message.reply_text(_["admin_12"])
                             if popped:
@@ -125,12 +126,11 @@ async def skip(cli, message: Message, _, chat_id):
     if db.get(chat_id) and db[chat_id]:
         db[chat_id][0]["played"] = 0
     exis = (check[0]).get("old_dur")
-    if exis:
-        if db.get(chat_id) and db[chat_id]:
-            db[chat_id][0]["dur"] = exis
-            db[chat_id][0]["seconds"] = check[0]["old_second"]
-            db[chat_id][0]["speed_path"] = None
-            db[chat_id][0]["speed"] = 1.0
+    if exis and db.get(chat_id) and db[chat_id]:
+        db[chat_id][0]["dur"] = exis
+        db[chat_id][0]["seconds"] = check[0]["old_second"]
+        db[chat_id][0]["speed_path"] = None
+        db[chat_id][0]["speed"] = 1.0
 
     if "live_" in queued:
         n, link = await YouTube.video(videoid, True)
@@ -162,7 +162,7 @@ async def skip(cli, message: Message, _, chat_id):
     elif "vid_" in queued:
         mystic = await message.reply_text(_["call_7"], disable_web_page_preview=True)
         try:
-            file_path, direct = await YouTube.download(
+            file_path, _direct = await YouTube.download(
                 videoid,
                 mystic,
                 videoid=True,
@@ -215,9 +215,7 @@ async def skip(cli, message: Message, _, chat_id):
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
     else:
-        if videoid == "telegram":
-            image = None
-        elif videoid == "soundcloud":
+        if videoid == "telegram" or videoid == "soundcloud":
             image = None
         else:
             try:

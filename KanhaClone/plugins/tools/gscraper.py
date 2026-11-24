@@ -8,23 +8,26 @@
 #
 
 import asyncio
+
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.errors import (
-    PeerFlood, 
-    UserPrivacyRestricted, 
-    UserChannelsTooMuch,
     FloodWait,
-    UserAlreadyParticipant
+    PeerFlood,
+    UserAlreadyParticipant,
+    UserChannelsTooMuch,
+    UserPrivacyRestricted,
 )
+from pyrogram.types import Message
+
+from config import API_HASH, API_ID
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS
 from KanhaClone.utils.database import clonebotdb, get_assistant
-from config import API_ID, API_HASH
 
 # --- CONFIGURATION ---
-DELAY_PER_ADD = 10     # Delay to prevent ban (Seconds)
-HISTORY_LIMIT = 300    # How many messages to scan in hidden groups
+DELAY_PER_ADD = 10  # Delay to prevent ban (Seconds)
+HISTORY_LIMIT = 300  # How many messages to scan in hidden groups
+
 
 @app.on_message(filters.command(["gadd", "gscrape"]) & SUDOERS)
 async def global_scraper(client: Client, message: Message):
@@ -39,7 +42,7 @@ async def global_scraper(client: Client, message: Message):
 
     source_link = message.command[1]
     target_link = message.command[2]
-    
+
     try:
         limit = int(message.command[3])
     except:
@@ -62,7 +65,7 @@ async def global_scraper(client: Client, message: Message):
     # 3. Scrape Members (Using Main Assistant)
     scraper = await get_assistant(message.chat.id)
     members_to_add = []
-    
+
     try:
         # Resolve Chat
         try:
@@ -80,15 +83,19 @@ async def global_scraper(client: Client, message: Message):
             async for member in scraper.get_chat_members(source_id, limit=limit + 20):
                 if not member.user.is_bot and not member.user.is_deleted:
                     members_to_add.append(member.user.id)
-                    if len(members_to_add) >= limit: break
+                    if len(members_to_add) >= limit:
+                        break
         except:
-            pass 
-        
+            pass
+
         # Method B: History Scan (If Hidden)
         if not members_to_add:
-            await msg.edit_text("⚠️ **Hidden Members Detected!**\n🔄 Scanning Chat History...")
+            await msg.edit_text(
+                "⚠️ **Hidden Members Detected!**\n🔄 Scanning Chat History..."
+            )
             async for m in scraper.get_chat_history(source_id, limit=HISTORY_LIMIT):
-                if len(members_to_add) >= limit: break
+                if len(members_to_add) >= limit:
+                    break
                 if m.from_user and not m.from_user.is_bot:
                     if m.from_user.id not in members_to_add:
                         members_to_add.append(m.from_user.id)
@@ -101,7 +108,7 @@ async def global_scraper(client: Client, message: Message):
 
     # 4. Distribute Work
     chunks = [members_to_add[i::num_clones] for i in range(num_clones)]
-    
+
     await msg.edit_text(
         f"🚀 **Starting Transfer!**\n"
         f"👥 **Members:** {len(members_to_add)}\n"
@@ -113,9 +120,16 @@ async def global_scraper(client: Client, message: Message):
     async def run_worker(session, users, wid):
         added = 0
         try:
-            cli = Client(f"w_{wid}", api_id=API_ID, api_hash=API_HASH, session_string=session, no_updates=True, in_memory=True)
+            cli = Client(
+                f"w_{wid}",
+                api_id=API_ID,
+                api_hash=API_HASH,
+                session_string=session,
+                no_updates=True,
+                in_memory=True,
+            )
             await cli.start()
-            
+
             # Join Target
             target_chat_id = None
             try:
@@ -125,7 +139,7 @@ async def global_scraper(client: Client, message: Message):
                 chat = await cli.get_chat(target_link)
                 target_chat_id = chat.id
             except Exception:
-                 # Try getting without join (Public)
+                # Try getting without join (Public)
                 try:
                     chat = await cli.get_chat(target_link)
                     target_chat_id = chat.id
@@ -144,16 +158,20 @@ async def global_scraper(client: Client, message: Message):
                     pass
                 except:
                     pass
-            
+
             await cli.stop()
             return added
         except:
             return 0
 
     # 6. Execute
-    tasks = [run_worker(sessions[i], chunks[i], i) for i in range(num_clones) if i < len(chunks)]
+    tasks = [
+        run_worker(sessions[i], chunks[i], i)
+        for i in range(num_clones)
+        if i < len(chunks)
+    ]
     results = await asyncio.gather(*tasks)
-    
+
     await message.reply_text(
         f"🏁 **Completed!**\n✅ **Total Added:** {sum(results)}\n🤖 **Clones Used:** {num_clones}"
     )

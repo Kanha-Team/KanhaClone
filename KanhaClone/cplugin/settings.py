@@ -7,16 +7,12 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
+from pyrogram import Client, filters
 from pyrogram.enums import ChatType
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import (
-    CallbackQuery,
-    InlineKeyboardMarkup,
-    Message,
-)
+from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
-from KanhaClone import app
+from config import BANNED_USERS, OWNER_ID
 from KanhaClone.utils.database import (
     add_nonadmin_chat,
     get_authuser,
@@ -42,7 +38,6 @@ from KanhaClone.utils.inline.settings import (
     vote_mode_markup,
 )
 from KanhaClone.utils.inline.start import private_panel
-from config import BANNED_USERS, OWNER_ID
 
 
 @Client.on_message(
@@ -207,8 +202,7 @@ async def addition(client, CallbackQuery, _):
                 _["setting_11"],
                 show_alert=True,
             )
-        if final <= 2:
-            final = 2
+        final = max(2, final)
         await set_upvotes(CallbackQuery.message.chat.id, final)
     else:
         final = current + 2
@@ -218,8 +212,7 @@ async def addition(client, CallbackQuery, _):
                 _["setting_12"],
                 show_alert=True,
             )
-        if final >= 15:
-            final = 15
+        final = min(15, final)
         await set_upvotes(CallbackQuery.message.chat.id, final)
     buttons = vote_mode_markup(_, final, True)
     try:
@@ -346,11 +339,11 @@ async def authusers_mar(client, CallbackQuery, _):
                 [
                     [
                         InlineKeyboardButton(
-                            text=_["BACK_BUTTON"], callback_data=f"AU"
+                            text=_["BACK_BUTTON"], callback_data="AU"
                         ),
                         InlineKeyboardButton(
                             text=_["CLOSE_BUTTON"],
-                            callback_data=f"close",
+                            callback_data="close",
                         ),
                     ]
                 ]

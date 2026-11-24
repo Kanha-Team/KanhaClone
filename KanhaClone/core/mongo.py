@@ -12,8 +12,6 @@ from pymongo import MongoClient
 
 import config
 
-from ..logging import LOGGER
-
 # A missing URI used to fall back to a hard-coded empty string, which made every
 # database call fail later with an unrelated-looking timeout. Fail fast instead.
 if not config.MONGO_DB_URI:

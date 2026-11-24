@@ -7,18 +7,24 @@
 # All rights reserved.
 #
 
-import asyncio
+
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.errors import (
-    SessionPasswordNeeded, FloodWait,
-    PhoneNumberInvalid, ApiIdInvalid,
-    PhoneCodeInvalid, PhoneCodeExpired,
-    UserDeactivated, AuthKeyUnregistered,
-    PasswordHashInvalid
+    ApiIdInvalid,
+    AuthKeyUnregistered,
+    FloodWait,
+    PasswordHashInvalid,
+    PhoneCodeExpired,
+    PhoneCodeInvalid,
+    PhoneNumberInvalid,
+    SessionPasswordNeeded,
+    UserDeactivated,
 )
+from pyrogram.types import Message
+
+from config import API_HASH, API_ID, OWNER_ID
 from KanhaClone.utils.database import clonebotdb
-from config import API_ID, API_HASH, OWNER_ID
+
 
 # ==========================================
 # 1. CONNECT ASSISTANT (Phone + OTP)
@@ -32,11 +38,15 @@ async def connect_assistant(client: Client, message: Message):
     # 1. Verify Database
     clone_data = await clonebotdb.find_one({"bot_id": bot_id})
     if not clone_data:
-        return await message.reply_text("❌ **Error:** Bot data not found in the database.")
+        return await message.reply_text(
+            "❌ **Error:** Bot data not found in the database."
+        )
 
     # 2. Access Check
     if clone_data["user_id"] != user.id and user.id != OWNER_ID:
-        return await message.reply_text("❌ **Access Denied:** Only the bot owner can perform this action.")
+        return await message.reply_text(
+            "❌ **Access Denied:** Only the bot owner can perform this action."
+        )
 
     await message.reply_text(
         "⚡ **Connect Assistant**\n"
@@ -50,7 +60,7 @@ async def connect_assistant(client: Client, message: Message):
             "📲 **Please send your Telegram Phone Number:**\n"
             "(Example: `+919876543210`)\n\n"
             "⚠️ **Don't forget the Country Code!**",
-            timeout=300
+            timeout=300,
         )
     except Exception:
         return await message.reply("❌ Time limit exceeded. Please try again.")
@@ -62,19 +72,16 @@ async def connect_assistant(client: Client, message: Message):
 
     # --- Step 2: Create Temporary Client ---
     msg = await message.reply("🔄 **Connecting to Server...**")
-    
+
     # Using in_memory=True to avoid creating session files
     temp_client = Client(
-        name=f"connect_{bot_id}",
-        api_id=API_ID,
-        api_hash=API_HASH,
-        in_memory=True
+        name=f"connect_{bot_id}", api_id=API_ID, api_hash=API_HASH, in_memory=True
     )
-    
+
     try:
         await temp_client.connect()
     except Exception as e:
-        await msg.edit(f"❌ **Connection Failed:** `{str(e)}`")
+        await msg.edit(f"❌ **Connection Failed:** `{e!s}`")
         return
 
     # --- Step 3: Send OTP Code ---
@@ -82,13 +89,17 @@ async def connect_assistant(client: Client, message: Message):
         try:
             code = await temp_client.send_code(phone_number)
         except PhoneNumberInvalid:
-            await msg.edit("❌ **Invalid Phone Number!** Please send in correct format (Ex: +91...).")
+            await msg.edit(
+                "❌ **Invalid Phone Number!** Please send in correct format (Ex: +91...)."
+            )
             return
         except ApiIdInvalid:
             await msg.edit("❌ **Internal Error:** API ID is invalid.")
             return
         except FloodWait as e:
-            await msg.edit(f"❌ **FloodWait:** Please wait for {e.value} seconds before connecting.")
+            await msg.edit(
+                f"❌ **FloodWait:** Please wait for {e.value} seconds before connecting."
+            )
             return
         except Exception as e:
             await msg.edit(f"❌ **Error:** `{e}`")
@@ -102,7 +113,7 @@ async def connect_assistant(client: Client, message: Message):
                 "📩 **OTP Sent!**\n\n"
                 "Check your Telegram messages. Send the OTP code like this:\n"
                 "Format: `1 2 3 4 5` (Space between each number)",
-                timeout=300
+                timeout=300,
             )
         except Exception:
             return await message.reply("❌ Time limit exceeded.")
@@ -127,29 +138,29 @@ async def connect_assistant(client: Client, message: Message):
                 pwd_msg = await message.chat.ask(
                     "🔐 **Two-Step Verification:**\n\n"
                     "Your account is protected with a password. Please enter it below:",
-                    timeout=300
+                    timeout=300,
                 )
             except Exception:
                 return await message.reply("❌ Time limit exceeded.")
-            
+
             if not pwd_msg.text or pwd_msg.text == "/cancel":
                 return await message.reply("❌ Process Cancelled.")
-            
+
             try:
                 await temp_client.check_password(password=pwd_msg.text)
             except PasswordHashInvalid:
                 await message.reply("❌ **Wrong Password!** Connection failed.")
                 return
             except Exception as e:
-                await message.reply(f"❌ **Error:** `{str(e)}`")
+                await message.reply(f"❌ **Error:** `{e!s}`")
                 return
         except Exception as e:
-            await message.reply(f"❌ **Error:** `{str(e)}`")
+            await message.reply(f"❌ **Error:** `{e!s}`")
             return
 
         # --- Step 7: Export String & Connect ---
         await message.reply("🔄 **Connection Successful! Starting Assistant...**")
-        
+
         try:
             # Stop old assistant if running
             if hasattr(client, "assistant") and client.assistant:
@@ -163,20 +174,19 @@ async def connect_assistant(client: Client, message: Message):
                     pass
 
             string_session = await temp_client.export_session_string()
-            
+
             # Send String to Saved Messages
             try:
                 await temp_client.send_message(
-                    "me", 
-                    f"**Here is your Connected Session String:**\n\n`{string_session}`\n\n⚠️ _Do not share this with anyone!_"
+                    "me",
+                    f"**Here is your Connected Session String:**\n\n`{string_session}`\n\n⚠️ _Do not share this with anyone!_",
                 )
             except Exception:
-                pass 
+                pass
 
             # Save to Database
             await clonebotdb.update_one(
-                {"bot_id": bot_id},
-                {"$set": {"session_string": string_session}}
+                {"bot_id": bot_id}, {"$set": {"session_string": string_session}}
             )
 
             # Connect Assistant
@@ -186,7 +196,7 @@ async def connect_assistant(client: Client, message: Message):
                 api_hash=API_HASH,
                 session_string=string_session,
                 no_updates=True,
-                in_memory=True
+                in_memory=True,
             )
             await new_assistant.start()
             ass_info = await new_assistant.get_me()
@@ -201,7 +211,7 @@ async def connect_assistant(client: Client, message: Message):
             )
 
         except Exception as e:
-            await message.reply(f"❌ **Error Connecting:** `{str(e)}`")
+            await message.reply(f"❌ **Error Connecting:** `{e!s}`")
 
     finally:
         if temp_client.is_connected:
@@ -223,7 +233,9 @@ async def set_clone_session(client: Client, message: Message):
         return await message.reply_text("❌ **Error:** Bot data not found in database.")
 
     if clone_data["user_id"] != user.id and user.id != OWNER_ID:
-        return await message.reply_text("❌ **Access Denied:** Only the owner can set the session.")
+        return await message.reply_text(
+            "❌ **Access Denied:** Only the owner can set the session."
+        )
 
     if len(message.command) < 2:
         return await message.reply_text(
@@ -254,9 +266,9 @@ async def set_clone_session(client: Client, message: Message):
             api_hash=API_HASH,
             session_string=string_session,
             no_updates=True,
-            in_memory=True
+            in_memory=True,
         )
-        
+
         await new_assistant.start()
         ass_info = await new_assistant.get_me()
 
@@ -265,10 +277,9 @@ async def set_clone_session(client: Client, message: Message):
 
         # 5. Database Update
         await clonebotdb.update_one(
-            {"bot_id": bot_id},
-            {"$set": {"session_string": string_session}}
+            {"bot_id": bot_id}, {"$set": {"session_string": string_session}}
         )
-        
+
         await msg.edit(
             f"✅ **Connected Successfully!**\n\n"
             f"👤 **Assistant:** {ass_info.first_name}\n"
@@ -277,9 +288,11 @@ async def set_clone_session(client: Client, message: Message):
         )
 
     except (UserDeactivated, AuthKeyUnregistered):
-        await msg.edit("❌ **Invalid String:** This session has expired. Please connect again.")
+        await msg.edit(
+            "❌ **Invalid String:** This session has expired. Please connect again."
+        )
     except Exception as e:
-        await msg.edit(f"❌ **Error:** `{str(e)}`")
+        await msg.edit(f"❌ **Error:** `{e!s}`")
 
 
 # ==========================================
@@ -297,7 +310,9 @@ async def disconnect_assistant(client: Client, message: Message):
         return await message.reply_text("❌ **Error:** Bot data not found in database.")
 
     if clone_data["user_id"] != user.id and user.id != OWNER_ID:
-        return await message.reply_text("❌ **Access Denied:** Only the owner can disconnect.")
+        return await message.reply_text(
+            "❌ **Access Denied:** Only the owner can disconnect."
+        )
 
     msg = await message.reply_text("🔄 **Disconnecting...**")
 
@@ -307,7 +322,7 @@ async def disconnect_assistant(client: Client, message: Message):
             try:
                 await client.assistant.stop()
             except:
-                pass 
+                pass
             try:
                 del client.assistant
             except:
@@ -315,14 +330,12 @@ async def disconnect_assistant(client: Client, message: Message):
 
         # 3. Database Update ($unset)
         await clonebotdb.update_one(
-            {"bot_id": bot_id},
-            {"$unset": {"session_string": 1}}
+            {"bot_id": bot_id}, {"$unset": {"session_string": 1}}
         )
-        
+
         await msg.edit(
-            "✅ **Disconnected Successfully!**\n\n"
-            "Assistant has been removed."
+            "✅ **Disconnected Successfully!**\n\n" "Assistant has been removed."
         )
 
     except Exception as e:
-        await msg.edit(f"❌ **Error:** `{str(e)}`")
+        await msg.edit(f"❌ **Error:** `{e!s}`")

@@ -7,32 +7,31 @@
 # All rights reserved.
 #
 
-import time
 import random
-import psutil
+import time
 from datetime import datetime
+
+import psutil
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from config import SUPPORT_CHAT, PING_IMG_URL, OWNER_ID, BANNED_USERS
-from KanhaClone import app
+from config import BANNED_USERS, OWNER_ID, PING_IMG_URL, SUPPORT_CHAT
 from KanhaClone.misc import _boot_
 from KanhaClone.utils import get_readable_time
+from KanhaClone.utils.database import clonebotdb
 
 # Database Imports
 from KanhaClone.utils.database.clonedb import (
-    get_owner_id_from_db,
     get_cloned_support_chat,
+    get_owner_id_from_db,
+    is_premium,
 )
-from KanhaClone.utils.database import clonebotdb
 
-
-import random
-from KanhaClone.utils.database.clonedb import is_premium
 
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -45,6 +44,7 @@ def btn(text, style=None, icon=None, **kw):
 
 # --- HELPER FUNCTIONS ---
 
+
 def get_random_ping_img():
     if PING_IMG_URL:
         if isinstance(PING_IMG_URL, list):
@@ -52,31 +52,38 @@ def get_random_ping_img():
         return PING_IMG_URL
     return "https://telegra.ph/file/2e3d368e77c449c287430.jpg"
 
+
 async def get_ping_image(bot_id: int):
     d = await clonebotdb.find_one({"bot_id": bot_id}) or {}
     return d.get("ping_image")
+
 
 async def get_ping_video(bot_id: int):
     d = await clonebotdb.find_one({"bot_id": bot_id}) or {}
     return d.get("ping_video")
 
+
 async def add_ping_content(bot_id, key, value):
     d = await clonebotdb.find_one({"bot_id": bot_id}) or {}
     current = d.get(key)
-    
+
     if current:
         if value in current:
-            return False # Duplicate check
+            return False  # Duplicate check
         final_value = f"{current}|||{value}"
     else:
         final_value = value
-        
-    await clonebotdb.update_one({"bot_id": bot_id}, {"$set": {key: final_value}}, upsert=True)
+
+    await clonebotdb.update_one(
+        {"bot_id": bot_id}, {"$set": {key: final_value}}, upsert=True
+    )
     return True
+
 
 # =====================================================================
 # /ping COMMAND
 # =====================================================================
+
 
 @Client.on_message(filters.command("ping") & ~BANNED_USERS)
 async def ping_clone(client: Client, message: Message):
@@ -87,7 +94,11 @@ async def ping_clone(client: Client, message: Message):
     try:
         C_BOT_SUPPORT_CHAT = await get_cloned_support_chat(bot_id)
         if C_BOT_SUPPORT_CHAT:
-            C_SUPPORT_CHAT = f"https://t.me/{C_BOT_SUPPORT_CHAT}" if "t.me" not in C_BOT_SUPPORT_CHAT else C_BOT_SUPPORT_CHAT
+            C_SUPPORT_CHAT = (
+                f"https://t.me/{C_BOT_SUPPORT_CHAT}"
+                if "t.me" not in C_BOT_SUPPORT_CHAT
+                else C_BOT_SUPPORT_CHAT
+            )
         else:
             C_SUPPORT_CHAT = SUPPORT_CHAT
     except:
@@ -96,7 +107,7 @@ async def ping_clone(client: Client, message: Message):
     # Fetch Custom Media (Raw Data)
     raw_ping_video = await get_ping_video(bot_id)
     raw_ping_img = await get_ping_image(bot_id)
-    
+
     ping_video = None
     if raw_ping_video:
         if "|||" in raw_ping_video:
@@ -110,30 +121,36 @@ async def ping_clone(client: Client, message: Message):
             ping_img = random.choice(raw_ping_img.split("|||"))
         else:
             ping_img = raw_ping_img
-    
+
     start = datetime.now()
     caption_text = f"{bot.mention} is pinging..."
-    
+
     hmm = None
-    
+
     # 1. PRIORITY: VIDEO
     if ping_video:
         try:
-            hmm = await message.reply_video(video=ping_video, caption=caption_text, has_spoiler=True)
+            hmm = await message.reply_video(
+                video=ping_video, caption=caption_text, has_spoiler=True
+            )
         except Exception:
-            pass 
+            pass
 
     # 2. PRIORITY: CUSTOM IMAGE
     if not hmm and ping_img:
         try:
-            hmm = await message.reply_photo(photo=ping_img, caption=caption_text, has_spoiler=True)
+            hmm = await message.reply_photo(
+                photo=ping_img, caption=caption_text, has_spoiler=True
+            )
         except Exception:
             pass
 
     # 3. PRIORITY: DEFAULT RANDOM IMAGE
     if not hmm:
         try:
-            hmm = await message.reply_photo(photo=get_random_ping_img(), caption=caption_text, has_spoiler=True)
+            hmm = await message.reply_photo(
+                photo=get_random_ping_img(), caption=caption_text, has_spoiler=True
+            )
         except Exception:
             # Fallback to Text
             hmm = await message.reply_text(caption_text)
@@ -175,9 +192,11 @@ async def ping_clone(client: Client, message: Message):
             ),
         )
 
+
 # =====================================================================
 # SETTINGS COMMANDS
 # =====================================================================
+
 
 @Client.on_message(filters.command(["setpingimg", "addpingimg"]) & ~BANNED_USERS)
 async def set_ping_image(client: Client, message: Message):
@@ -185,12 +204,12 @@ async def set_ping_image(client: Client, message: Message):
         return await message.reply_text("💎 ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ɪs ғᴏʀ ᴘʀᴇᴍɪᴜᴍ ʙᴏᴛs ᴏɴʟʏ.")
     bot = await client.get_me()
     bot_id = bot.id
-    
+
     try:
         owner_id = await get_owner_id_from_db(bot_id)
     except:
         owner_id = get_owner_id_from_db(bot_id)
-        
+
     if message.from_user.id not in [OWNER_ID, owner_id]:
         return await message.reply_text("🚫 Only the Bot Owner can use this command.")
 
@@ -220,12 +239,14 @@ async def del_ping_image(client: Client, message: Message):
         owner_id = await get_owner_id_from_db(bot_id)
     except:
         owner_id = get_owner_id_from_db(bot_id)
-        
+
     if message.from_user.id not in [OWNER_ID, owner_id]:
         return await message.reply_text("🚫 Only the Bot Owner can use this command.")
 
     await clonebotdb.update_one({"bot_id": bot_id}, {"$unset": {"ping_image": ""}})
-    return await message.reply_text("🗑 All custom ping images removed! (Reset to Default)")
+    return await message.reply_text(
+        "🗑 All custom ping images removed! (Reset to Default)"
+    )
 
 
 @Client.on_message(filters.command(["setpingvideo", "addpingvideo"]) & ~BANNED_USERS)
@@ -234,12 +255,12 @@ async def set_ping_video(client: Client, message: Message):
         return await message.reply_text("💎 ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ɪs ғᴏʀ ᴘʀᴇᴍɪᴜᴍ ʙᴏᴛs ᴏɴʟʏ.")
     bot = await client.get_me()
     bot_id = bot.id
-    
+
     try:
         owner_id = await get_owner_id_from_db(bot_id)
     except:
         owner_id = get_owner_id_from_db(bot_id)
-        
+
     if message.from_user.id not in [OWNER_ID, owner_id]:
         return await message.reply_text("🚫 Only the Bot Owner can use this command.")
 
@@ -261,7 +282,9 @@ async def set_ping_video(client: Client, message: Message):
         await add_ping_content(bot_id, "ping_video", url)
         return await message.reply_text("✅ Video URL added to Random Ping List!")
 
-    return await message.reply_text("❗ Reply to a video/GIF or use /addpingvideo [URL]")
+    return await message.reply_text(
+        "❗ Reply to a video/GIF or use /addpingvideo [URL]"
+    )
 
 
 @Client.on_message(filters.command(["delpingvideo", "resetpingvideo"]) & ~BANNED_USERS)
@@ -275,9 +298,11 @@ async def del_ping_video(client: Client, message: Message):
         owner_id = await get_owner_id_from_db(bot_id)
     except:
         owner_id = get_owner_id_from_db(bot_id)
-        
+
     if message.from_user.id not in [OWNER_ID, owner_id]:
         return await message.reply_text("🚫 Only the Bot Owner can use this command.")
 
     await clonebotdb.update_one({"bot_id": bot_id}, {"$unset": {"ping_video": ""}})
-    return await message.reply_text("🗑 All custom ping videos removed! (Reset to Default)")
+    return await message.reply_text(
+        "🗑 All custom ping videos removed! (Reset to Default)"
+    )

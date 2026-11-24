@@ -9,45 +9,13 @@
 
 import asyncio
 import random
-from pyrogram import filters, Client
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from KanhaClone import YouTube, app
-from KanhaClone.core.call import Kanha
-from KanhaClone.misc import SUDOERS, db
-from KanhaClone.utils.database import (
-    get_active_chats,
-    get_lang,
-    get_upvote_count,
-    is_active_chat,
-    is_music_playing,
-    is_nonadmin_chat,
-    music_off,
-    music_on,
-    mute_off,
-    mute_on,
-    is_muted,
-    set_loop,
-    get_assistant,
-)
-from KanhaClone.utils.decorators.language import languageCB
-from KanhaClone.utils.formatters import seconds_to_min
-from KanhaClone.utils.inline import (
-    close_markup,
-    stream_markup,
-    stream_markup_timer,
-    stream_markup2,
-    stream_markup_timer2,
-    panel_markup_5,
-    panel_markup_4,
-    panel_markup_3,
-    panel_markup_2,
-    panel_markup_1,
-    aq_markup
-)
-from KanhaClone.utils.stream.autoclear import auto_clean
-from KanhaClone.utils.thumbnails import get_thumb
+
+from pyrogram import Client, filters
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
 from config import (
     BANNED_USERS,
+    PLAYLIST_IMG_URL,
     SOUNCLOUD_IMG_URL,
     STREAM_IMG_URL,
     TELEGRAM_AUDIO_URL,
@@ -55,11 +23,47 @@ from config import (
     adminlist,
     confirmer,
     votemode,
-    PLAYLIST_IMG_URL
 )
+from KanhaClone import YouTube
+from KanhaClone.core.call import Kanha
+from KanhaClone.misc import SUDOERS, db
+from KanhaClone.utils.database import (
+    get_active_chats,
+    get_assistant,
+    get_lang,
+    get_upvote_count,
+    is_active_chat,
+    is_music_playing,
+    is_muted,
+    is_nonadmin_chat,
+    music_off,
+    music_on,
+    mute_off,
+    mute_on,
+    set_loop,
+)
+from KanhaClone.utils.database.clonedb import (
+    get_cloned_support_chat,
+    get_owner_id_from_db,
+)
+from KanhaClone.utils.decorators.language import languageCB
+from KanhaClone.utils.formatters import seconds_to_min
+from KanhaClone.utils.inline import (
+    close_markup,
+    panel_markup_1,
+    panel_markup_2,
+    panel_markup_3,
+    panel_markup_4,
+    panel_markup_5,
+    stream_markup,
+    stream_markup2,
+    stream_markup_timer,
+    stream_markup_timer2,
+)
+from KanhaClone.utils.stream.autoclear import auto_clean
+from KanhaClone.utils.thumbnails import get_thumb
 from strings import get_string
-from config import lyrical
-from KanhaClone.utils.database.clonedb import get_owner_id_from_db, get_cloned_support_chat, get_cloned_support_channel
+
 
 def get_random_img(img_list):
     if img_list:
@@ -68,9 +72,11 @@ def get_random_img(img_list):
         return img_list
     return "https://telegra.ph/file/2e3d368e77c449c287430.jpg"
 
+
 wrong = {}
 checker = {}
 upvoters = {}
+
 
 @Client.on_callback_query(filters.regex("PanelMarkup") & ~BANNED_USERS)
 @languageCB
@@ -95,7 +101,7 @@ async def del_back_playlists(client, CallbackQuery, _):
     await CallbackQuery.answer()
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
-    videoid, chat_id = callback_request.split("|")
+    _videoid, chat_id = callback_request.split("|")
     buttons = stream_markup(_, chat_id)
     chat_id = CallbackQuery.message.chat.id
     try:
@@ -112,7 +118,7 @@ async def music_markup(client, CallbackQuery, _):
     await CallbackQuery.answer()
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
-    videoid, chat_id = callback_request.split("|")
+    _videoid, chat_id = callback_request.split("|")
     buttons = stream_markup(_, chat_id)
     chat_id = CallbackQuery.message.chat.id
     try:
@@ -174,9 +180,9 @@ async def unban_assistant(client, callback: CallbackQuery):
             "My Assistant Id Unbanned Successfully🥳\n\n➻ Now You Can Play Songs🔉\n\nThank You💝",
             show_alert=True,
         )
-    except Exception as e:
+    except Exception:
         await callback.answer(
-            f"Failed To Unban My Assistant Because I Don't Have Ban Power\n\n➻ Please Provide Me Ban Power So That I can Unban My Assistant Id",
+            "Failed To Unban My Assistant Because I Don't Have Ban Power\n\n➻ Please Provide Me Ban Power So That I can Unban My Assistant Id",
             show_alert=True,
         )
 
@@ -185,10 +191,13 @@ async def unban_assistant(client, callback: CallbackQuery):
 @languageCB
 async def del_back_playlist(client, CallbackQuery, _):
     bot = await client.get_me()
-    C_BOT_OWNER_ID = await get_owner_id_from_db(bot.id)
+    await get_owner_id_from_db(bot.id)
     C_BOT_SUPPORT_CHAT = await get_cloned_support_chat(bot.id)
-    C_SUPPORT_CHAT = f"https://t.me/{C_BOT_SUPPORT_CHAT}" if "t.me" not in C_BOT_SUPPORT_CHAT else C_BOT_SUPPORT_CHAT
-    cusername = bot.username
+    C_SUPPORT_CHAT = (
+        f"https://t.me/{C_BOT_SUPPORT_CHAT}"
+        if "t.me" not in C_BOT_SUPPORT_CHAT
+        else C_BOT_SUPPORT_CHAT
+    )
 
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -238,7 +247,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                 exists = confirmer[chat_id][CallbackQuery.message.id]
                 current = db[chat_id][0]
             except:
-                return await CallbackQuery.edit_message_text(f"ғᴀɪʟᴇᴅ.")
+                return await CallbackQuery.edit_message_text("ғᴀɪʟᴇᴅ.")
             try:
                 if current["vidid"] != exists["vidid"]:
                     return await CallbackQuery.edit_message.text(_["admin_35"])
@@ -274,16 +283,15 @@ async def del_back_playlist(client, CallbackQuery, _):
             return await CallbackQuery.edit_message_reply_markup(reply_markup=upl)
     else:
         is_non_admin = await is_nonadmin_chat(CallbackQuery.message.chat.id)
-        if not is_non_admin:
-            if CallbackQuery.from_user.id not in SUDOERS:
-                admins = adminlist.get(CallbackQuery.message.chat.id)
-                if not admins:
-                    return await CallbackQuery.answer(_["admin_13"], show_alert=True)
-                else:
-                    if CallbackQuery.from_user.id not in admins:
-                        return await CallbackQuery.answer(
-                            _["admin_14"], show_alert=True
-                        )
+        if not is_non_admin and CallbackQuery.from_user.id not in SUDOERS:
+            admins = adminlist.get(CallbackQuery.message.chat.id)
+            if not admins:
+                return await CallbackQuery.answer(_["admin_13"], show_alert=True)
+            else:
+                if CallbackQuery.from_user.id not in admins:
+                    return await CallbackQuery.answer(
+                        _["admin_14"], show_alert=True
+                    )
 
     if command == "Pause":
         if not await is_music_playing(chat_id):
@@ -305,7 +313,7 @@ async def del_back_playlist(client, CallbackQuery, _):
             photo=get_random_img(PLAYLIST_IMG_URL),
             caption=_["admin_2"].format(mention),
             reply_markup=InlineKeyboardMarkup(buttons),
-            has_spoiler=True
+            has_spoiler=True,
         )
 
     elif command == "Resume":
@@ -334,7 +342,7 @@ async def del_back_playlist(client, CallbackQuery, _):
             photo=get_random_img(PLAYLIST_IMG_URL),
             caption=_["admin_4"].format(mention),
             reply_markup=InlineKeyboardMarkup(buttons_resume),
-            has_spoiler=True
+            has_spoiler=True,
         )
 
     elif command == "Stop" or command == "End":
@@ -345,7 +353,7 @@ async def del_back_playlist(client, CallbackQuery, _):
             photo=get_random_img(PLAYLIST_IMG_URL),
             caption=_["admin_5"].format(mention),
             reply_markup=close_markup(_),
-            has_spoiler=True
+            has_spoiler=True,
         )
         try:
             await CallbackQuery.message.delete()
@@ -392,7 +400,7 @@ async def del_back_playlist(client, CallbackQuery, _):
             photo=get_random_img(PLAYLIST_IMG_URL),
             caption=_["admin_44"].format(mention),
             reply_markup=close_markup(_),
-            has_spoiler=True
+            has_spoiler=True,
         )
 
     elif command == "Skip" or command == "Replay":
@@ -405,9 +413,13 @@ async def del_back_playlist(client, CallbackQuery, _):
                 if popped:
                     await auto_clean(popped)
                 if not check:
-                    await CallbackQuery.edit_message_text(f"➻ sᴛʀᴇᴀᴍ sᴋɪᴩᴩᴇᴅ 🎄\n│ \n└ʙʏ : {mention} 🥀")
+                    await CallbackQuery.edit_message_text(
+                        f"➻ sᴛʀᴇᴀᴍ sᴋɪᴩᴩᴇᴅ 🎄\n│ \n└ʙʏ : {mention} 🥀"
+                    )
                     await CallbackQuery.message.reply_text(
-                        text=_["admin_6"].format(mention, CallbackQuery.message.chat.title),
+                        text=_["admin_6"].format(
+                            mention, CallbackQuery.message.chat.title
+                        ),
                         reply_markup=close_markup(_),
                     )
                     try:
@@ -416,9 +428,13 @@ async def del_back_playlist(client, CallbackQuery, _):
                         return
             except:
                 try:
-                    await CallbackQuery.edit_message_text(f"➻ sᴛʀᴇᴀᴍ sᴋɪᴩᴩᴇᴅ 🎄\n│ \n└ʙʏ : {mention} 🥀")
+                    await CallbackQuery.edit_message_text(
+                        f"➻ sᴛʀᴇᴀᴍ sᴋɪᴩᴩᴇᴅ 🎄\n│ \n└ʙʏ : {mention} 🥀"
+                    )
                     await CallbackQuery.message.reply_text(
-                        text=_["admin_6"].format(mention, CallbackQuery.message.chat.title),
+                        text=_["admin_6"].format(
+                            mention, CallbackQuery.message.chat.title
+                        ),
                         reply_markup=close_markup(_),
                     )
                     return await Kanha.stop_stream(chat_id)
@@ -439,12 +455,11 @@ async def del_back_playlist(client, CallbackQuery, _):
         if db.get(chat_id) and db[chat_id]:
             db[chat_id][0]["played"] = 0
         exis = (check[0]).get("old_dur")
-        if exis:
-            if db.get(chat_id) and db[chat_id]:
-                db[chat_id][0]["dur"] = exis
-                db[chat_id][0]["seconds"] = check[0]["old_second"]
-                db[chat_id][0]["speed_path"] = None
-                db[chat_id][0]["speed"] = 1.0
+        if exis and db.get(chat_id) and db[chat_id]:
+            db[chat_id][0]["dur"] = exis
+            db[chat_id][0]["seconds"] = check[0]["old_second"]
+            db[chat_id][0]["speed_path"] = None
+            db[chat_id][0]["speed"] = 1.0
 
         if "live_" in queued:
             n, link = await YouTube.video(videoid, True)
@@ -463,7 +478,8 @@ async def del_back_playlist(client, CallbackQuery, _):
                 return await CallbackQuery.message.reply_text(_["call_6"])
             button = stream_markup2(_, chat_id)
             img = await get_thumb(videoid)
-            if not img: img = get_random_img(PLAYLIST_IMG_URL)
+            if not img:
+                img = get_random_img(PLAYLIST_IMG_URL)
             run = await CallbackQuery.message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
@@ -473,7 +489,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                     user,
                 ),
                 reply_markup=InlineKeyboardMarkup(button),
-                has_spoiler=True
+                has_spoiler=True,
             )
             if db.get(chat_id) and db[chat_id]:
                 db[chat_id][0]["mystic"] = run
@@ -485,7 +501,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                 _["call_7"], disable_web_page_preview=True
             )
             try:
-                file_path, direct = await YouTube.download(
+                file_path, _direct = await YouTube.download(
                     videoid,
                     mystic,
                     videoid=True,
@@ -503,7 +519,8 @@ async def del_back_playlist(client, CallbackQuery, _):
                 return await mystic.edit_text(_["call_6"])
             button = stream_markup(_, chat_id)
             img = await get_thumb(videoid)
-            if not img: img = get_random_img(PLAYLIST_IMG_URL)
+            if not img:
+                img = get_random_img(PLAYLIST_IMG_URL)
             run = await CallbackQuery.message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
@@ -513,7 +530,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                     user,
                 ),
                 reply_markup=InlineKeyboardMarkup(button),
-                has_spoiler=True
+                has_spoiler=True,
             )
             if db.get(chat_id) and db[chat_id]:
                 db[chat_id][0]["mystic"] = run
@@ -531,7 +548,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                 photo=get_random_img(STREAM_IMG_URL),
                 caption=_["stream_2"].format(user),
                 reply_markup=InlineKeyboardMarkup(button),
-                has_spoiler=True
+                has_spoiler=True,
             )
             if db.get(chat_id) and db[chat_id]:
                 db[chat_id][0]["mystic"] = run
@@ -539,9 +556,7 @@ async def del_back_playlist(client, CallbackQuery, _):
             await CallbackQuery.edit_message_text(txt, reply_markup=close_markup(_))
 
         else:
-            if videoid == "telegram":
-                image = None
-            elif videoid == "soundcloud":
+            if videoid == "telegram" or videoid == "soundcloud":
                 image = None
             else:
                 try:
@@ -555,14 +570,18 @@ async def del_back_playlist(client, CallbackQuery, _):
 
             if videoid == "telegram":
                 button = stream_markup2(_, chat_id)
-                tg_img = get_random_img(TELEGRAM_AUDIO_URL) if str(streamtype) == "audio" else get_random_img(TELEGRAM_VIDEO_URL)
+                tg_img = (
+                    get_random_img(TELEGRAM_AUDIO_URL)
+                    if str(streamtype) == "audio"
+                    else get_random_img(TELEGRAM_VIDEO_URL)
+                )
                 run = await CallbackQuery.message.reply_photo(
                     photo=tg_img,
                     caption=_["stream_1"].format(
                         C_SUPPORT_CHAT, title[:23], duration, user
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=True
+                    has_spoiler=True,
                 )
                 if db.get(chat_id) and db[chat_id]:
                     db[chat_id][0]["mystic"] = run
@@ -576,7 +595,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                         C_SUPPORT_CHAT, title[:23], duration, user
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=True
+                    has_spoiler=True,
                 )
                 if db.get(chat_id) and db[chat_id]:
                     db[chat_id][0]["mystic"] = run
@@ -585,7 +604,8 @@ async def del_back_playlist(client, CallbackQuery, _):
             else:
                 button = stream_markup(_, chat_id)
                 img = await get_thumb(videoid)
-                if not img: img = get_random_img(PLAYLIST_IMG_URL)
+                if not img:
+                    img = get_random_img(PLAYLIST_IMG_URL)
                 run = await CallbackQuery.message.reply_photo(
                     photo=img,
                     caption=_["stream_1"].format(
@@ -595,7 +615,7 @@ async def del_back_playlist(client, CallbackQuery, _):
                         user,
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=True
+                    has_spoiler=True,
                 )
                 if db.get(chat_id) and db[chat_id]:
                     db[chat_id][0]["mystic"] = run
@@ -744,6 +764,7 @@ async def markup_timer():
                     continue
             except:
                 continue
+
 
 def _schedule_markup_timer():
     """Start the 5-minute markup refresher if an event loop is running.

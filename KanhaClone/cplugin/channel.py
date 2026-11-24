@@ -7,16 +7,16 @@
 # All rights reserved.
 #
 
-from time import time
 import asyncio
-from pyrogram import filters, Client
+from time import time
+
+from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter, ChatMemberStatus, ChatType
 from pyrogram.types import Message
 
-from KanhaClone import app
+from config import BANNED_USERS
 from KanhaClone.utils.database import set_cmode
 from KanhaClone.utils.decorators.admins import AdminActual
-from config import BANNED_USERS
 
 # Spam Protection Memory
 user_last_message_time = {}
@@ -24,12 +24,13 @@ user_command_count = {}
 SPAM_THRESHOLD = 2
 SPAM_WINDOW_SECONDS = 5
 
+
 @Client.on_message(filters.command(["channelplay"]) & filters.group & ~BANNED_USERS)
 @AdminActual
 async def playmode_(client, message: Message, _):
     user_id = message.from_user.id
     current_time = time()
-    
+
     # Spam Logic
     last_message_time = user_last_message_time.get(user_id, 0)
 
@@ -50,14 +51,14 @@ async def playmode_(client, message: Message, _):
     # Command Logic
     if len(message.command) < 2:
         return await message.reply_text(_["cplay_1"].format(message.chat.title))
-    
+
     query = message.text.split(None, 2)[1].lower().strip()
-    
+
     # Disable
     if str(query) == "disable":
         await set_cmode(message.chat.id, None)
         return await message.reply_text(_["cplay_7"])
-    
+
     # Linked Chat
     elif str(query) == "linked":
         chat = await client.get_chat(message.chat.id)
@@ -69,17 +70,17 @@ async def playmode_(client, message: Message, _):
             )
         else:
             return await message.reply_text(_["cplay_2"])
-    
+
     # Custom Channel ID/Username
     else:
         try:
             chat = await client.get_chat(query)
         except:
             return await message.reply_text(_["cplay_4"])
-        
+
         if chat.type != ChatType.CHANNEL:
             return await message.reply_text(_["cplay_5"])
-        
+
         # Verify Ownership
         crid = None
         cusn = None
@@ -90,12 +91,12 @@ async def playmode_(client, message: Message, _):
                 if user.status == ChatMemberStatus.OWNER:
                     cusn = user.user.username
                     crid = user.user.id
-                    break 
+                    break
         except:
             return await message.reply_text(_["cplay_4"])
-            
+
         if crid != message.from_user.id:
             return await message.reply_text(_["cplay_6"].format(chat.title, cusn))
-            
+
         await set_cmode(message.chat.id, chat.id)
         return await message.reply_text(_["cplay_3"].format(chat.title, chat.id))

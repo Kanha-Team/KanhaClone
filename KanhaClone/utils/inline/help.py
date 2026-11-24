@@ -7,16 +7,17 @@
 # All rights reserved.
 #
 
-from typing import Union
+import random
+
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from KanhaClone import app
 
-
-import random
 
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -27,7 +28,7 @@ def btn(text, style=None, icon=None, **kw):
         return InlineKeyboardButton(text=text, **kw)
 
 
-def help_pannel(_, START: Union[bool, int] = None):
+def help_pannel(_, START: bool | int | None = None):
     first = [
         [
             btn(text=_["H_B_1"], callback_data="help_callback hb1"),
@@ -58,9 +59,11 @@ def first_page(_, is_owner: bool = False):
     first = []
 
     if is_owner:
-        first.append([
-            btn(text="ᴄʟσηᴇ ғᴇᴀᴛυʀᴇs", callback_data="help_callback chelp"),
-        ])
+        first.append(
+            [
+                btn(text="ᴄʟσηᴇ ғᴇᴀᴛυʀᴇs", callback_data="help_callback chelp"),
+            ]
+        )
 
     first += [
         [

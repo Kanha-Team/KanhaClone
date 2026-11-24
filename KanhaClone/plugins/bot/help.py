@@ -8,23 +8,23 @@
 #
 
 import random
-from typing import Union
+
 from pyrogram import enums, filters, types
-from pyrogram.types import InlineKeyboardMarkup, Message, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+
+from config import BANNED_USERS, START_IMG_URL, SUPPORT_CHAT
 from KanhaClone import app
 from KanhaClone.utils import help_pannel
 from KanhaClone.utils.database import get_lang
 from KanhaClone.utils.decorators.language import LanguageStart, languageCB
 from KanhaClone.utils.inline.help import help_back_markup, private_help_panel
-from config import BANNED_USERS, START_IMG_URL, SUPPORT_CHAT
 from strings import get_string, helpers
 
-
-import random
 
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -40,12 +40,13 @@ def get_random_start_img():
         if isinstance(START_IMG_URL, list):
             return random.choice(START_IMG_URL)
         return START_IMG_URL
-    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg" # Fallback
+    return "https://telegra.ph/file/2e3d368e77c449c287430.jpg"  # Fallback
+
 
 @app.on_message(filters.command(["help"]) & filters.private & ~BANNED_USERS)
 @app.on_callback_query(filters.regex("settings_back_helper") & ~BANNED_USERS)
 async def helper_private(
-    client: app, update: Union[types.Message, types.CallbackQuery]
+    client: app, update: types.Message | types.CallbackQuery
 ):
     is_callback = isinstance(update, types.CallbackQuery)
     if is_callback:
@@ -57,7 +58,7 @@ async def helper_private(
         language = await get_lang(chat_id)
         _ = get_string(language)
         keyboard = help_pannel(_, True)
-        
+
         # Callback just edits text, no spoiler needed here
         await update.edit_message_text(
             _["help_1"].format(SUPPORT_CHAT), reply_markup=keyboard
@@ -70,12 +71,12 @@ async def helper_private(
         language = await get_lang(update.chat.id)
         _ = get_string(language)
         keyboard = help_pannel(_)
-        
+
         await update.reply_photo(
             photo=get_random_start_img(),
             caption=_["help_1"].format(SUPPORT_CHAT),
             reply_markup=keyboard,
-            has_spoiler=True
+            has_spoiler=True,
         )
 
 
@@ -92,7 +93,7 @@ async def helper_cb(client, CallbackQuery, _):
     callback_data = CallbackQuery.data.strip()
     cb = callback_data.split(None, 1)[1]
     keyboard = help_back_markup(_)
-    
+
     if cb == "hb1":
         await CallbackQuery.edit_message_text(helpers.HELP_1, reply_markup=keyboard)
     elif cb == "hb2":
@@ -131,15 +132,15 @@ async def helper_cb(client, CallbackQuery, _):
         )
 
 
-@app.on_callback_query(filters.regex('managebot123'))
+@app.on_callback_query(filters.regex("managebot123"))
 async def on_back_button(client, CallbackQuery):
     callback_data = CallbackQuery.data.strip()
     cb = callback_data.split(None, 1)[1]
-    
+
     # We need to get language here to pass to help_pannel
     language = await get_lang(CallbackQuery.message.chat.id)
     _ = get_string(language)
-    
+
     keyboard = help_pannel(_, True)
     if cb == "settings_back_helper":
         await CallbackQuery.edit_message_text(

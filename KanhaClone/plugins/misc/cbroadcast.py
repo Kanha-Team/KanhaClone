@@ -8,39 +8,50 @@
 #
 
 import asyncio
-from pyrogram import filters, Client
-from pyrogram.enums import ChatType
-from pyrogram.errors import FloodWait, RPCError, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, AuthKeyUnregistered, UserDeactivated
 
+from pyrogram import Client, filters
+from pyrogram.errors import (
+    AuthKeyUnregistered,
+    FloodWait,
+    UserDeactivated,
+)
+
+from config import API_HASH, API_ID
 from KanhaClone import app
 from KanhaClone.misc import SUDOERS
 from KanhaClone.utils.database.clonedb import (
-    get_all_clones, 
-    get_served_chats_clone, 
+    get_all_clones,
+    get_clonebot_owner,
+    get_served_chats_clone,
     get_served_users_clone,
-    get_clonebot_owner
 )
-from config import API_ID, API_HASH
 
 # Global Flag
 IS_CBROADCASTING = False
+
 
 @app.on_message(filters.command("stopclonecast") & SUDOERS)
 async def stop_clone_broadcast(client, message):
     global IS_CBROADCASTING
     if not IS_CBROADCASTING:
-        return await message.reply_text("❌ **No Clone Broadcast is currently running.**")
-    
+        return await message.reply_text(
+            "❌ **No Clone Broadcast is currently running.**"
+        )
+
     IS_CBROADCASTING = False
-    await message.reply_text("🛑 **Stopping Broadcast...**\nProcess will halt after current bot.")
+    await message.reply_text(
+        "🛑 **Stopping Broadcast...**\nProcess will halt after current bot."
+    )
 
 
 @app.on_message(filters.command("clonecast") & SUDOERS)
 async def clone_broadcast_handler(client, message):
     global IS_CBROADCASTING
-    
+
     if IS_CBROADCASTING:
-        return await message.reply_text("⚠️ **Broadcast already running!** Stop it first.")
+        return await message.reply_text(
+            "⚠️ **Broadcast already running!** Stop it first."
+        )
 
     # --- COMMAND PARSING ---
     if message.reply_to_message:
@@ -95,11 +106,12 @@ async def clone_broadcast_handler(client, message):
 
     # --- MAIN LOOP ---
     for clone in all_clones_data:
-        if not IS_CBROADCASTING: break
+        if not IS_CBROADCASTING:
+            break
 
-        token = clone.get('token')
-        bot_id = clone.get('bot_id')
-        username = clone.get('username', 'Unknown')
+        token = clone.get("token")
+        bot_id = clone.get("bot_id")
+        clone.get("username", "Unknown")
 
         if not token or not bot_id:
             failed_clones += 1
@@ -122,7 +134,7 @@ async def clone_broadcast_handler(client, message):
             try:
                 users_list = await get_served_users_clone(bot_id)
                 for u in users_list:
-                    target_ids.add(int(u['user_id']))
+                    target_ids.add(int(u["user_id"]))
             except:
                 pass
 
@@ -131,7 +143,7 @@ async def clone_broadcast_handler(client, message):
             try:
                 chats_list = await get_served_chats_clone(bot_id)
                 for c in chats_list:
-                    target_ids.add(int(c['chat_id']))
+                    target_ids.add(int(c["chat_id"]))
             except:
                 pass
 
@@ -142,50 +154,51 @@ async def clone_broadcast_handler(client, message):
         # --- B. SEND MESSAGES ---
         try:
             async with Client(
-                f":memory:",
+                ":memory:",
                 api_id=API_ID,
                 api_hash=API_HASH,
                 bot_token=token,
                 in_memory=True,
-                no_updates=True
+                no_updates=True,
             ) as clone_app:
-                
+
                 clone_sent_count = 0
-                
+
                 # Check if bot is alive
                 try:
                     await clone_app.get_me()
                 except (AuthKeyUnregistered, UserDeactivated):
                     failed_clones += 1
-                    continue # Token expired
+                    continue  # Token expired
 
                 for chat_id in target_ids:
-                    if not IS_CBROADCASTING: break
-                    
+                    if not IS_CBROADCASTING:
+                        break
+
                     try:
                         if message.reply_to_message:
                             sent = await message.reply_to_message.copy(chat_id)
                         else:
                             sent = await clone_app.send_message(chat_id, query)
-                        
+
                         if pin and sent and str(chat_id).startswith("-100"):
                             try:
                                 await sent.pin(disable_notification=True)
                             except:
                                 pass
-                        
+
                         clone_sent_count += 1
                         total_sent += 1
                         await asyncio.sleep(0.2)
-                    
+
                     except FloodWait as e:
                         await asyncio.sleep(int(e.value))
                     except Exception:
                         continue
-                
+
                 if clone_sent_count > 0:
                     success_clones += 1
-                
+
         except Exception:
             failed_clones += 1
             continue

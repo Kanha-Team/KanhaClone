@@ -9,19 +9,20 @@
 
 import asyncio
 import time
+
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
 from pyrogram.types import CallbackQuery, Message
 
-from KanhaClone import app
+from config import BANNED_USERS, adminlist, lyrical
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import db
 from KanhaClone.utils.database import get_assistant, get_authuser_names, get_cmode
 from KanhaClone.utils.decorators import ActualAdminCB, AdminActual, language
 from KanhaClone.utils.formatters import alpha_to_int, get_readable_time
-from config import BANNED_USERS, adminlist, lyrical
 
 rel = {}
+
 
 @Client.on_message(
     filters.command(
@@ -39,25 +40,25 @@ async def reload_admin_cache(client, message: Message, _):
         else:
             saved = rel[message.chat.id]
             if saved > time.time():
-                left = get_readable_time((int(saved) - int(time.time())))
+                left = get_readable_time(int(saved) - int(time.time()))
                 return await message.reply_text(_["reload_1"].format(left))
-        
+
         adminlist[message.chat.id] = []
-        
+
         # Admin list fetch karna
         async for user in client.get_chat_members(
             message.chat.id, filter=ChatMembersFilter.ADMINISTRATORS
         ):
             if user.privileges.can_manage_video_chats:
                 adminlist[message.chat.id].append(user.user.id)
-        
+
         # Auth users fetch karna (Database Call - Await Rahega)
         authusers = await get_authuser_names(message.chat.id)
-        
+
         for user in authusers:
             user_id = alpha_to_int(user)
             adminlist[message.chat.id].append(user_id)
-            
+
         now = int(time.time()) + 180
         rel[message.chat.id] = now
         await message.reply_text(_["reload_2"])

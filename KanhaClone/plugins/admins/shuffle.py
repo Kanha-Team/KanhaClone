@@ -12,11 +12,11 @@ import random
 from pyrogram import filters
 from pyrogram.types import Message
 
+from config import BANNED_USERS
 from KanhaClone import app
 from KanhaClone.misc import db
 from KanhaClone.utils.decorators import AdminRightsCheck
 from KanhaClone.utils.inline import close_markup
-from config import BANNED_USERS
 
 
 @app.on_message(

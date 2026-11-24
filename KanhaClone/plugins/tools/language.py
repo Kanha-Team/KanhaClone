@@ -7,21 +7,22 @@
 # All rights reserved.
 #
 
+import random
+
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+from config import BANNED_USERS
 from KanhaClone import app
 from KanhaClone.utils.database import get_lang, set_lang
 from KanhaClone.utils.decorators import ActualAdminCB, language, languageCB
-from config import BANNED_USERS
 from strings import get_string, languages_present
 
-
-import random
 
 def btn(text, style=None, icon=None, **kw):
     try:
         from pyrogram.enums import ButtonStyle
+
         styles = [
             ButtonStyle.DANGER,
             ButtonStyle.PRIMARY,
@@ -30,7 +31,6 @@ def btn(text, style=None, icon=None, **kw):
         return InlineKeyboardButton(text=text, style=random.choice(styles), **kw)
     except (ImportError, TypeError, AttributeError):
         return InlineKeyboardButton(text=text, **kw)
-
 
 
 def lanuages_keyboard(_):
@@ -42,7 +42,7 @@ def lanuages_keyboard(_):
         )
         for i in languages_present
     ]
-    rows = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
+    rows = [buttons[i : i + 2] for i in range(0, len(buttons), 2)]
     rows.append(
         [
             btn(

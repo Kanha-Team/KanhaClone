@@ -7,22 +7,22 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
+from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from KanhaClone import app
 from KanhaClone.core.call import Kanha
 from KanhaClone.misc import db
 
 welcome = 20
 close = 30
 
+
 @Client.on_message(filters.video_chat_started, group=welcome)
 @Client.on_message(filters.video_chat_ended, group=close)
 async def video_chat_events(_, message: Message):
     # Stream ko force stop karega
     await Kanha.stop_stream_force(message.chat.id)
-    
+
     try:
         db[message.chat.id] = []
     except:

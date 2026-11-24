@@ -7,33 +7,32 @@
 # All rights reserved.
 #
 
-from pyrogram import filters, Client
-from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from KanhaClone import app
-from KanhaClone.core.call import Kanha
-from KanhaClone.utils.inline import close_markup
 from config import BANNED_USERS
+from KanhaClone.core.call import Kanha
+from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
+
 # Hum Database functions import kar rahe hain taaki state save rahe
 from KanhaClone.utils.database import is_music_playing, music_on
 
-from KanhaClone.cplugin.utils.decorators.admins import AdminRightsCheck
 
 @Client.on_message(
     filters.command(["resume", "cresume"]) & filters.group & ~BANNED_USERS
 )
-@AdminRightsCheck # <-- Ab ye Clone Owner/Sudo ko allow karega
+@AdminRightsCheck  # <-- Ab ye Clone Owner/Sudo ko allow karega
 async def resume_com(cli, message: Message, _, chat_id):
     # Check karega ki kya music already chal raha hai?
     if await is_music_playing(chat_id):
         return await message.reply_text(_["admin_3"])
-    
+
     # Music ko ON mark karega (Global Memory mein)
     await music_on(chat_id)
-    
+
     # Stream ko Resume karega
     await Kanha.resume_stream(chat_id)
-    
+
     buttons_resume = [
         [
             InlineKeyboardButton(text="sᴋɪᴘ", callback_data=f"ADMIN Skip|{chat_id}"),
