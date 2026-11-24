@@ -4,7 +4,7 @@ Thanks for taking the time to contribute.
 
 ## Before you start
 
-1. Fork the repository and create a branch off `main`.
+1. Fork the repository and create a branch off `master`.
 2. Keep Python at 3.11 and Node.js at 20. PyTgCalls needs Node.js 20.
 3. Copy `sample.env` to `.env` and fill in your own values. Never commit `.env` or `*.session` files.
 

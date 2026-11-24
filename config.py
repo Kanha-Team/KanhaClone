@@ -2,7 +2,7 @@
 # Copyright (C) 2026 by Kanha-Team@Github, < https://github.com/Kanha-Team>.
 # This file is part of < https://github.com/Kanha-Team/KanhaClone > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/Kanha-Team/KanhaClone/blob/main/LICENSE >
+# Please see < https://github.com/Kanha-Team/KanhaClone/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -67,7 +67,7 @@ HEROKU_APP_NAME = getenv("HEROKU_APP_NAME")
 HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 
 
-UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "main")
+UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = getenv("GIT_TOKEN", "")
 
 SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/Meowcloner")
