@@ -23,7 +23,7 @@ dependencies = [
   "ntgcalls>=3.0.6",
   "py-yt-search==0.8.1",
   "python-dotenv==1.2.4",
-  "pyyaml==6.0.3",
+  "pyyaml==6.0.4",
   "requests==2.34.2",
   "SafoneAPI==1.0.70",
   "six==1.17.0",
