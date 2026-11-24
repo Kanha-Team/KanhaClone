@@ -19,7 +19,7 @@ dependencies = [
   "motor==3.7.1",
   "pillow==13.0.0",
   "psutil==7.2.2",
-  "py-tgcalls==3.0.0",
+  "py-tgcalls==3.0.1",
   "ntgcalls==3.0.5",
   "py-yt-search==0.8.1",
   "python-dotenv==1.2.4",
